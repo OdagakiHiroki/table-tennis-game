@@ -1,5 +1,9 @@
 # table-tennis-game
 
+## play-mode
+### battle
+### rally challenge
+
 ## Project setup
 ```
 yarn install
