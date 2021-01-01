@@ -15,6 +15,7 @@ export default {
       cameraFrustumFarPlane: 1000,
       directionalLightColor: 0xFFFFFF,
       directionalLightIntensity: 1,
+      ballSize: 4,
       renderer: null,
     };
   },
@@ -43,11 +44,11 @@ export default {
         this.directionalLightIntensity,
       );
     },
-    cube() {
-      return this.$customThree.createCube(100, 100, 100);
-    },
     plane() {
       return this.$customThree.createPlane(150, 150, 64, 64);
+    },
+    ball() {
+      return this.$customThree.createBall(this.ballSize);
     },
     // helpers
     cameraHelper() {
@@ -65,21 +66,19 @@ export default {
       canvas: this.$refs.canvas,
       alpha: false,
     });
-    // createScene
-    const scene = this.$customThree.createScene();
     // setPosition, setRotation
-    this.$customThree.setPosition(this.camera, { x: 0, y: 60, z: 140 });
-    this.$customThree.setRotation(this.camera, { x: Math.PI / -4 });
+    this.$customThree.setPosition(this.camera, { x: 0, y: 120, z: 150 });
+    this.$customThree.setRotation(this.camera, { x: Math.PI / -10 });
     this.$customThree.setPosition(this.directionalLight, { x: 0, y: 150, z: 0 });
     this.$customThree.setRotation(this.plane, { x: Math.PI / -2 });
-    this.$customThree.setRotation(this.cube, { x: Math.PI / 4, y: Math.PI / 4 });
+    this.$customThree.setPosition(this.ball, { x: 30, y: 40, z: 60 });
+    // createScene
+    const scene = this.$customThree.createScene(this.cameraHelper, this.directionalLightHelper);
     // add scene
     scene.add(
       this.directionalLight,
-      this.cube,
+      this.ball,
       this.plane,
-      this.directionalLightHelper,
-      this.cameraHelper,
     );
     // render
     this.renderer.render(scene, this.camera);

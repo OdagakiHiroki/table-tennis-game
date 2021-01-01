@@ -2,8 +2,17 @@ import * as THREE from 'three';
 
 const customThree = {
   // scene
-  createScene() {
-    return new THREE.Scene();
+  createScene(...objects) {
+    const scene = new THREE.Scene();
+    const objectLength = objects.length;
+    if (objects.length > 0) {
+      for (let objIndex = 0; objIndex < objectLength; objIndex += 1) {
+        scene.add(objects[objIndex]);
+      }
+    }
+    scene.add(this.createGridHelper(300, 10, 0x8800FF));
+    scene.add(this.createAxesHelper(300));
+    return scene;
   },
   // renderer
   createWebGLRenderer(params) {
@@ -19,12 +28,13 @@ const customThree = {
   },
   // geometry
   createPlaneGeometry(width = 1, height = 1, widthSegaments = 1, heightSegments = 1) {
-    const geometry = new THREE.PlaneGeometry(width, height, widthSegaments, heightSegments);
-    return geometry;
+    return new THREE.PlaneGeometry(width, height, widthSegaments, heightSegments);
   },
   createBoxGeometry(width = 1, height = 1, depth = 1) {
-    const geometry = new THREE.BoxGeometry(width, height, depth);
-    return geometry;
+    return new THREE.BoxGeometry(width, height, depth);
+  },
+  createSphereGeometory(radius = 1, widthSegments = 8, heightSegments = 6) {
+    return new THREE.SphereGeometry(radius, widthSegments, heightSegments);
   },
   // material
   createMeshStandardMaterial() {
@@ -33,8 +43,7 @@ const customThree = {
   },
   // mesh
   createMeshObj(geometry, material) {
-    const meshObj = new THREE.Mesh(geometry, material);
-    return meshObj;
+    return new THREE.Mesh(geometry, material);
   },
   // object
   createPlane(width = 1, height = 1, widthSegaments = 1, heightSegments = 1) {
@@ -47,14 +56,23 @@ const customThree = {
     const meshStandardMaterial = this.createMeshStandardMaterial();
     return this.createMeshObj(boxGeometry, meshStandardMaterial);
   },
+  createBall(radius = 1, widthSegments = 100, heightSegments = 100) {
+    const ballGeometry = this.createSphereGeometory(radius, widthSegments, heightSegments);
+    const meshStandardMaterial = this.createMeshStandardMaterial();
+    return this.createMeshObj(ballGeometry, meshStandardMaterial);
+  },
   // createHelpers
   createCameraHelper(camera) {
-    const cameraHelper = new THREE.CameraHelper(camera);
-    return cameraHelper;
+    return new THREE.CameraHelper(camera);
   },
   createDirectionalRightHelper(light) {
-    const lightHelper = new THREE.DirectionalLightHelper(light);
-    return lightHelper;
+    return new THREE.DirectionalLightHelper(light);
+  },
+  createAxesHelper(size) {
+    return new THREE.AxesHelper(size);
+  },
+  createGridHelper(size = 10, divisions = 10, colorCenterLine = 0x444444, colorGrid = 0x888888) {
+    return new THREE.GridHelper(size, divisions, colorCenterLine, colorGrid);
   },
   // methods
   setPosition(obj, { x = null, y = null, z = null }) {
