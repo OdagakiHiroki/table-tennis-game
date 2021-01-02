@@ -26,6 +26,9 @@ const customThree = {
   createDirectionalLight(color = 0xffffff, intensity = 1) {
     return new THREE.DirectionalLight(color, intensity);
   },
+  createPointLight(color = 0xFFFFFF, intensity = 1, distance = 0, decay = 1) {
+    return new THREE.PointLight(color, intensity, distance, decay);
+  },
   // geometry
   createPlaneGeometry(width = 1, height = 1, widthSegaments = 1, heightSegments = 1) {
     return new THREE.PlaneGeometry(width, height, widthSegaments, heightSegments);
@@ -56,17 +59,82 @@ const customThree = {
     const meshStandardMaterial = this.createMeshStandardMaterial();
     return this.createMeshObj(boxGeometry, meshStandardMaterial);
   },
-  createBall(radius = 1, widthSegments = 100, heightSegments = 100) {
+  createBall({
+    radius = 1, widthSegments = 100, heightSegments = 100, color = 0xFFFFFF,
+  }) {
     const ballGeometry = this.createSphereGeometory(radius, widthSegments, heightSegments);
     const meshStandardMaterial = this.createMeshStandardMaterial();
+    meshStandardMaterial.setValues({ color });
     return this.createMeshObj(ballGeometry, meshStandardMaterial);
+  },
+  createRoom(width = 1, height = 1, depth = 1) {
+    // 地面を作成
+    const groundMesh = this.createPlane(width, depth);
+    this.setPosition(groundMesh, { y: 0 });
+    this.setRotation(groundMesh, { x: Math.PI / -2 });
+    groundMesh.material.color = new THREE.Color(0x886622);
+    // 天井を作成
+    const ceilingMesh = this.createPlane(width, depth);
+    this.setPosition(ceilingMesh, { y: height });
+    this.setRotation(ceilingMesh, { x: Math.PI / -2 });
+    ceilingMesh.material.color = new THREE.Color(0x2211FF);
+    // 正面の壁を作成
+    const frontWallMesh = this.createPlane(width, height);
+    this.setPosition(frontWallMesh, { y: height / 2, z: depth / -2 });
+    frontWallMesh.material.color = new THREE.Color(0x221111);
+    // 背後の壁を作成
+    const backWallMesh = this.createPlane(width, height);
+    // this.setPosition(backWallMesh, { y: height / 2, z: depth / 2 });
+    this.setPosition(backWallMesh, { z: depth / 2 });
+    backWallMesh.material.color = new THREE.Color(0x2211FF);
+    // 左の壁を作成
+    const leftWallMesh = this.createPlane(depth, height);
+    this.setPosition(leftWallMesh, { x: width / -2, y: height / 2 });
+    this.setRotation(leftWallMesh, { y: Math.PI / 2 });
+    leftWallMesh.material.color = new THREE.Color(0x221111);
+    // 右の壁を作成
+    const rightWallMesh = this.createPlane(depth, height);
+    this.setPosition(rightWallMesh, { x: width / 2, y: height / 2 });
+    this.setRotation(rightWallMesh, { y: Math.PI / -2 });
+    rightWallMesh.material.color = new THREE.Color(0x221111);
+    // グループ化
+    const roomGroup = new THREE.Group();
+    roomGroup.add(
+      groundMesh,
+      ceilingMesh,
+      frontWallMesh,
+      backWallMesh,
+      leftWallMesh,
+      rightWallMesh,
+    );
+    return roomGroup;
+    // TODO: 1つのgeometryにしても、それぞれ任意の面を任意のカラーにする方法を模索する
+    // const roomGeometry = new THREE.Geometry();
+    // const meshItems = [
+    //   groundMesh,
+    //   ceilingMesh,
+    //   frontWallMesh,
+    //   backWallMesh,
+    //   leftWallMesh,
+    //   rightWallMesh,
+    // ];
+    // for (let meshItemIndex = 0; meshItemIndex < meshItems.length; meshItemIndex += 1) {
+    //   roomGeometry.mergeMesh(meshItems[meshItemIndex]);
+    // }
+    // const meshStandardMaterial = this.createMeshStandardMaterial();
+    // const room = this.createMeshObj(roomGeometry, meshStandardMaterial);
+    // room.material.color = new THREE.Color(0xFF0000);
+    // return room;
   },
   // createHelpers
   createCameraHelper(camera) {
     return new THREE.CameraHelper(camera);
   },
-  createDirectionalRightHelper(light) {
-    return new THREE.DirectionalLightHelper(light);
+  createDirectionalRightHelper(light, size = 1) {
+    return new THREE.DirectionalLightHelper(light, size);
+  },
+  createPointLightHelper(light, sphereSize = 1) {
+    return new THREE.PointLightHelper(light, sphereSize);
   },
   createAxesHelper(size) {
     return new THREE.AxesHelper(size);

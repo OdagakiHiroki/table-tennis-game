@@ -10,12 +10,46 @@ export default {
 
   data() {
     return {
-      cameraFov: 100,
-      cameraFrustumNearPlane: 0.1,
-      cameraFrustumFarPlane: 1000,
-      directionalLightColor: 0xFFFFFF,
-      directionalLightIntensity: 1,
-      ballSize: 4,
+      cameraParams: {
+        fov: 100,
+        near: 0.1,
+        far: 1000,
+        position: {
+          x: 0,
+          y: 120,
+          z: 140,
+        },
+        rotation: {
+          x: Math.PI / -60,
+          y: 0,
+          z: 0,
+        },
+      },
+      pointLightParams: {
+        color: 0xFFFFFF,
+        intensity: 4,
+        distance: 0,
+        decay: 1,
+        position: {
+          x: 0,
+          y: 250,
+          z: 0,
+        },
+      },
+      roomParams: {
+        width: 300,
+        height: 300,
+        depth: 300,
+      },
+      ballParams: {
+        radius: 4,
+        color: 0xFFFFFF,
+        position: {
+          x: 30,
+          y: 40,
+          z: 60,
+        },
+      },
       renderer: null,
     };
   },
@@ -31,31 +65,29 @@ export default {
       return this.canvasWidth / this.canvasHeight;
     },
     camera() {
-      return this.$customThree.createPerspectiveCamera(
-        this.cameraFov,
-        this.aspectRatio,
-        this.cameraFrustumNearPlane,
-        this.cameraFrustumFarPlane,
-      );
+      const { fov, near, far } = this.cameraParams;
+      return this.$customThree.createPerspectiveCamera(fov, this.aspectRatio, near, far);
     },
-    directionalLight() {
-      return this.$customThree.createDirectionalLight(
-        this.directionalLightColor,
-        this.directionalLightIntensity,
-      );
+    pointLight() {
+      const {
+        color, intensity, distance, decay,
+      } = this.pointLightParams;
+      return this.$customThree.createPointLight(color, intensity, distance, decay);
     },
-    plane() {
-      return this.$customThree.createPlane(150, 150, 64, 64);
+    room() {
+      const { width, height, depth } = this.roomParams;
+      return this.$customThree.createRoom(width, height, depth);
     },
     ball() {
-      return this.$customThree.createBall(this.ballSize);
+      const { radius, color } = this.ballParams;
+      return this.$customThree.createBall({ radius, color });
     },
     // helpers
     cameraHelper() {
       return this.$customThree.createCameraHelper(this.camera);
     },
-    directionalLightHelper() {
-      return this.$customThree.createDirectionalRightHelper(this.directionalLight);
+    pointLightHelper() {
+      return this.$customThree.createPointLightHelper(this.pointLight, 30);
     },
   },
 
@@ -67,18 +99,20 @@ export default {
       alpha: false,
     });
     // setPosition, setRotation
-    this.$customThree.setPosition(this.camera, { x: 0, y: 120, z: 150 });
-    this.$customThree.setRotation(this.camera, { x: Math.PI / -10 });
-    this.$customThree.setPosition(this.directionalLight, { x: 0, y: 150, z: 0 });
-    this.$customThree.setRotation(this.plane, { x: Math.PI / -2 });
-    this.$customThree.setPosition(this.ball, { x: 30, y: 40, z: 60 });
+    const { position: cameraPosition, rotation: cameraRotation } = this.cameraParams;
+    this.$customThree.setPosition(this.camera, { ...cameraPosition });
+    this.$customThree.setRotation(this.camera, { ...cameraRotation });
+    const { position: pointLightPosition } = this.pointLightParams;
+    this.$customThree.setPosition(this.pointLight, { ...pointLightPosition });
+    const { position: ballPosition } = this.ballParams;
+    this.$customThree.setPosition(this.ball, { ...ballPosition });
     // createScene
-    const scene = this.$customThree.createScene(this.cameraHelper, this.directionalLightHelper);
+    const scene = this.$customThree.createScene(this.cameraHelper, this.pointLightHelper);
     // add scene
     scene.add(
-      this.directionalLight,
+      this.pointLight,
       this.ball,
-      this.plane,
+      this.room,
     );
     // render
     this.renderer.render(scene, this.camera);
