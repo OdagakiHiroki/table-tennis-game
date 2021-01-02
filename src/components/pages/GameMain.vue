@@ -16,8 +16,8 @@ export default {
         far: 1000,
         position: {
           x: 0,
-          y: 120,
-          z: 140,
+          y: 100,
+          z: 150,
         },
         rotation: {
           x: Math.PI / -60,
@@ -50,7 +50,9 @@ export default {
           z: 60,
         },
       },
+      scene: null,
       renderer: null,
+      orbitControls: null,
     };
   },
 
@@ -92,10 +94,11 @@ export default {
   },
 
   mounted() {
+    const { canvas } = this.$refs;
     // createRenderer
     this.renderer = this.$customThree.createWebGLRenderer({
       antialias: true,
-      canvas: this.$refs.canvas,
+      canvas,
       alpha: false,
     });
     // setPosition, setRotation
@@ -107,15 +110,26 @@ export default {
     const { position: ballPosition } = this.ballParams;
     this.$customThree.setPosition(this.ball, { ...ballPosition });
     // createScene
-    const scene = this.$customThree.createScene(this.cameraHelper, this.pointLightHelper);
+    this.scene = this.$customThree.createScene(this.cameraHelper, this.pointLightHelper);
     // add scene
-    scene.add(
+    this.scene.add(
       this.pointLight,
       this.ball,
       this.room,
     );
+    // create controll
+    this.orbitControls = this.$customThree.createOrbitControls(this.camera, canvas);
     // render
-    this.renderer.render(scene, this.camera);
+    this.animate();
+  },
+
+  methods: {
+    animate() {
+      requestAnimationFrame(this.animate);
+      this.renderer.render(this.scene, this.camera);
+      // update controll
+      // this.orbitControls.update();
+    },
   },
 };
 </script>

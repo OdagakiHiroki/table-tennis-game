@@ -1,4 +1,11 @@
 import * as THREE from 'three';
+/* eslint-disable import/extensions, import/no-unresolved */
+import { TrackballControls } from 'three/trackballControls';
+import { OrbitControls } from 'three/orbitControls';
+/* eslint-enable */
+
+THREE.TrackballControls = TrackballControls;
+THREE.OrbitControls = OrbitControls;
 
 const customThree = {
   // scene
@@ -84,7 +91,7 @@ const customThree = {
     frontWallMesh.material.color = new THREE.Color(0x221111);
     // 背後の壁を作成
     const backWallMesh = this.createPlane(width, height);
-    // this.setPosition(backWallMesh, { y: height / 2, z: depth / 2 });
+    this.setPosition(backWallMesh, { y: height / 2, z: depth / 2 });
     this.setPosition(backWallMesh, { z: depth / 2 });
     backWallMesh.material.color = new THREE.Color(0x2211FF);
     // 左の壁を作成
@@ -141,6 +148,13 @@ const customThree = {
   },
   createGridHelper(size = 10, divisions = 10, colorCenterLine = 0x444444, colorGrid = 0x888888) {
     return new THREE.GridHelper(size, divisions, colorCenterLine, colorGrid);
+  },
+  // controls
+  createTrackballControls(camera, domElement) {
+    return new THREE.TrackballControls(camera, domElement);
+  },
+  createOrbitControls(camera, domElement) {
+    return new THREE.OrbitControls(camera, domElement);
   },
   // methods
   setPosition(obj, { x = null, y = null, z = null }) {
