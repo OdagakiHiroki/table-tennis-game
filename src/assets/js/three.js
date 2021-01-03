@@ -47,8 +47,8 @@ const customThree = {
     return new THREE.SphereGeometry(radius, widthSegments, heightSegments);
   },
   // material
-  createMeshStandardMaterial() {
-    const material = new THREE.MeshStandardMaterial();
+  createMeshStandardMaterial(params) {
+    const material = new THREE.MeshStandardMaterial(params);
     return material;
   },
   // mesh
@@ -56,54 +56,71 @@ const customThree = {
     return new THREE.Mesh(geometry, material);
   },
   // object
-  createPlane(width = 1, height = 1, widthSegaments = 1, heightSegments = 1) {
+  createPlane({
+    width = 1, height = 1, widthSegaments = 1, heightSegments = 1, materialParams = {},
+  }) {
     const planeGeometry = this.createPlaneGeometry(width, height, widthSegaments, heightSegments);
-    const meshStandardMaterial = this.createMeshStandardMaterial();
+    const meshStandardMaterial = this.createMeshStandardMaterial(materialParams);
     return this.createMeshObj(planeGeometry, meshStandardMaterial);
   },
-  createCube(width = 1, height = 1, depth = 1) {
+  createCube(width = 1, height = 1, depth = 1, materialParams = {}) {
     const boxGeometry = this.createBoxGeometry(width, height, depth);
-    const meshStandardMaterial = this.createMeshStandardMaterial();
+    const meshStandardMaterial = this.createMeshStandardMaterial(materialParams);
     return this.createMeshObj(boxGeometry, meshStandardMaterial);
   },
-  createBall({
-    radius = 1, widthSegments = 100, heightSegments = 100, color = 0xFFFFFF,
-  }) {
-    const ballGeometry = this.createSphereGeometory(radius, widthSegments, heightSegments);
-    const meshStandardMaterial = this.createMeshStandardMaterial();
-    meshStandardMaterial.setValues({ color });
-    return this.createMeshObj(ballGeometry, meshStandardMaterial);
-  },
   createRoom(width = 1, height = 1, depth = 1) {
+    const groundMaterialParams = { color: 0x886622 };
+    const ceilingMaterialParams = { color: 0x221111 };
+    const wallMaterialParams = { color: 0x221111 };
     // 地面を作成
-    const groundMesh = this.createPlane(width, depth);
+    const groundMesh = this.createPlane({
+      width,
+      height: depth,
+      materialParams: groundMaterialParams,
+    });
     this.setPosition(groundMesh, { y: 0 });
     this.setRotation(groundMesh, { x: Math.PI / -2 });
-    groundMesh.material.color = new THREE.Color(0x886622);
     // 天井を作成
-    const ceilingMesh = this.createPlane(width, depth);
+    const ceilingMesh = this.createPlane({
+      width,
+      height: depth,
+      materialParams: ceilingMaterialParams,
+    });
     this.setPosition(ceilingMesh, { y: height });
     this.setRotation(ceilingMesh, { x: Math.PI / -2 });
-    ceilingMesh.material.color = new THREE.Color(0x2211FF);
+    this.setRotation(ceilingMesh, { y: Math.PI });
     // 正面の壁を作成
-    const frontWallMesh = this.createPlane(width, height);
+    const frontWallMesh = this.createPlane({
+      width,
+      height: depth,
+      materialParams: wallMaterialParams,
+    });
     this.setPosition(frontWallMesh, { y: height / 2, z: depth / -2 });
-    frontWallMesh.material.color = new THREE.Color(0x221111);
     // 背後の壁を作成
-    const backWallMesh = this.createPlane(width, height);
+    const backWallMesh = this.createPlane({
+      width,
+      height: depth,
+      materialParams: wallMaterialParams,
+    });
     this.setPosition(backWallMesh, { y: height / 2, z: depth / 2 });
     this.setPosition(backWallMesh, { z: depth / 2 });
-    backWallMesh.material.color = new THREE.Color(0x2211FF);
+    this.setRotation(backWallMesh, { y: Math.PI });
     // 左の壁を作成
-    const leftWallMesh = this.createPlane(depth, height);
+    const leftWallMesh = this.createPlane({
+      width,
+      height: depth,
+      materialParams: wallMaterialParams,
+    });
     this.setPosition(leftWallMesh, { x: width / -2, y: height / 2 });
     this.setRotation(leftWallMesh, { y: Math.PI / 2 });
-    leftWallMesh.material.color = new THREE.Color(0x221111);
     // 右の壁を作成
-    const rightWallMesh = this.createPlane(depth, height);
+    const rightWallMesh = this.createPlane({
+      width,
+      height: depth,
+      materialParams: wallMaterialParams,
+    });
     this.setPosition(rightWallMesh, { x: width / 2, y: height / 2 });
     this.setRotation(rightWallMesh, { y: Math.PI / -2 });
-    rightWallMesh.material.color = new THREE.Color(0x221111);
     // グループ化
     const roomGroup = new THREE.Group();
     roomGroup.add(
@@ -132,6 +149,25 @@ const customThree = {
     // const room = this.createMeshObj(roomGeometry, meshStandardMaterial);
     // room.material.color = new THREE.Color(0xFF0000);
     // return room;
+  },
+  createBall({
+    radius = 1, widthSegments = 100, heightSegments = 100, color = 0xFFFFFF,
+  }) {
+    const ballGeometry = this.createSphereGeometory(radius, widthSegments, heightSegments);
+    const meshStandardMaterial = this.createMeshStandardMaterial();
+    meshStandardMaterial.setValues({ color });
+    return this.createMeshObj(ballGeometry, meshStandardMaterial);
+  },
+  // TODO: tableTennisTable作成関数としてtableとnetをまとめる
+  createTable(width = 100, height = 100, depth = 5, materialParams = {}) {
+    const table = this.createCube(width, height, depth, materialParams);
+    return table;
+  },
+  createNet(width, height, depth, materialParams = {}) {
+    // const netMaterialParams = { wireframe: true };
+    // const mergedMaterialParams = { ...materialParams, ...netMaterialParams };
+    const net = this.createCube(width, height, depth, materialParams);
+    return net;
   },
   // createHelpers
   createCameraHelper(camera) {

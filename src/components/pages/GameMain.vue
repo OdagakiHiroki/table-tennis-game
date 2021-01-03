@@ -11,13 +11,13 @@ export default {
   data() {
     return {
       cameraParams: {
-        fov: 100,
+        fov: 70,
         near: 0.1,
         far: 1000,
         position: {
           x: 0,
-          y: 100,
-          z: 150,
+          y: 160,
+          z: 222,
         },
         rotation: {
           x: Math.PI / -60,
@@ -32,22 +32,44 @@ export default {
         decay: 1,
         position: {
           x: 0,
-          y: 250,
-          z: 0,
+          y: 900,
+          z: 222,
         },
       },
       roomParams: {
-        width: 300,
-        height: 300,
-        depth: 300,
+        width: 1000,
+        height: 1000,
+        depth: 1000,
+      },
+      tableParams: {
+        width: 152.5,
+        height: 5,
+        depth: 274,
+        color: 0x09368C,
+        position: {
+          x: 0,
+          y: 76,
+          z: 0,
+        },
+      },
+      netParams: {
+        width: 152.5,
+        height: 15.25,
+        depth: 1,
+        color: 0x09008A,
+        position: {
+          x: 0,
+          y: 76 + 7.125 + 2.5,
+          z: 0,
+        },
       },
       ballParams: {
-        radius: 4,
+        radius: 2,
         color: 0xFFFFFF,
         position: {
           x: 30,
-          y: 40,
-          z: 60,
+          y: 92,
+          z: 142,
         },
       },
       scene: null,
@@ -66,6 +88,7 @@ export default {
     aspectRatio() {
       return this.canvasWidth / this.canvasHeight;
     },
+    // TODO: カメラを遠近感のないものに変更する
     camera() {
       const { fov, near, far } = this.cameraParams;
       return this.$customThree.createPerspectiveCamera(fov, this.aspectRatio, near, far);
@@ -79,6 +102,20 @@ export default {
     room() {
       const { width, height, depth } = this.roomParams;
       return this.$customThree.createRoom(width, height, depth);
+    },
+    table() {
+      const {
+        width, height, depth, color,
+      } = this.tableParams;
+      const materialParams = { color };
+      return this.$customThree.createTable(width, height, depth, materialParams);
+    },
+    net() {
+      const {
+        width, height, depth, color,
+      } = this.netParams;
+      const materialParams = { color };
+      return this.$customThree.createNet(width, height, depth, materialParams);
     },
     ball() {
       const { radius, color } = this.ballParams;
@@ -107,6 +144,10 @@ export default {
     this.$customThree.setRotation(this.camera, { ...cameraRotation });
     const { position: pointLightPosition } = this.pointLightParams;
     this.$customThree.setPosition(this.pointLight, { ...pointLightPosition });
+    const { position: tablePosition } = this.tableParams;
+    this.$customThree.setPosition(this.table, { ...tablePosition });
+    const { position: netPosition } = this.netParams;
+    this.$customThree.setPosition(this.net, { ...netPosition });
     const { position: ballPosition } = this.ballParams;
     this.$customThree.setPosition(this.ball, { ...ballPosition });
     // createScene
@@ -114,8 +155,10 @@ export default {
     // add scene
     this.scene.add(
       this.pointLight,
-      this.ball,
       this.room,
+      this.table,
+      this.net,
+      this.ball,
     );
     // create controll
     this.orbitControls = this.$customThree.createOrbitControls(this.camera, canvas);
