@@ -29,8 +29,10 @@ export default {
         far: 1000,
         position: {
           x: 0,
-          y: 160,
+          y: 80,
           z: 222,
+          // y: 160,
+          // z: 222,
         },
         rotation: {
           x: Math.PI / -60,
@@ -152,7 +154,7 @@ export default {
     phyContactTableAndBall() {
       const options = {
         friction: 0.8, // 摩擦係数
-        restitution: 0.8, // 反発係数
+        restitution: 0.8876, // 反発係数
       };
       return this.$customCannon.createContactMaterial(
         this.phyTable.material,
@@ -175,7 +177,6 @@ export default {
     this.phyWorld.add(this.phyBall.body);
     this.phyWorld.add(this.phyTable.body);
     this.phyWorld.addContactMaterial(this.phyContactTableAndBall);
-    console.debug(this.phyWorld);
     // ============canvasの世界を作成================
     const { canvas } = this.$refs;
     // createRenderer
