@@ -10,6 +10,19 @@ export default {
 
   data() {
     return {
+      phyWorld: null,
+      scene: null,
+      renderer: null,
+      orbitControls: null,
+      phyWorldParams: {
+        gravity: {
+          x: 0,
+          y: -9.8,
+          z: 0,
+        },
+        iterations: 5,
+        tolerance: 0.1,
+      },
       cameraParams: {
         fov: 70,
         near: 0.1,
@@ -42,10 +55,12 @@ export default {
         depth: 1000,
       },
       tableParams: {
+        name: 'table',
         width: 152.5,
         height: 5,
         depth: 274,
         color: 0x09368C,
+        mass: 0,
         position: {
           x: 0,
           y: 76,
@@ -64,17 +79,16 @@ export default {
         },
       },
       ballParams: {
+        name: 'ball',
         radius: 2,
         color: 0xFFFFFF,
+        mass: 100,
         position: {
           x: 30,
           y: 92,
-          z: 142,
+          z: 102,
         },
       },
-      scene: null,
-      renderer: null,
-      orbitControls: null,
     };
   },
 
@@ -110,6 +124,13 @@ export default {
       const materialParams = { color };
       return this.$customThree.createTable(width, height, depth, materialParams);
     },
+    phyTable() {
+      const {
+        name, mass, position, width, height, depth,
+      } = this.tableParams;
+      const size = { x: width, y: height, z: depth };
+      return this.$customCannon.createTable(name, mass, position, size);
+    },
     net() {
       const {
         width, height, depth, color,
@@ -117,9 +138,26 @@ export default {
       const materialParams = { color };
       return this.$customThree.createNet(width, height, depth, materialParams);
     },
+    phyBall() {
+      const {
+        name, mass, position, radius,
+      } = this.ballParams;
+      return this.$customCannon.createBall(name, mass, position, radius);
+    },
     ball() {
       const { radius, color } = this.ballParams;
       return this.$customThree.createBall({ radius, color });
+    },
+    // contactMaterial
+    phyContactTableAndBall() {
+      const options = {
+        friction: 0.8, // 摩擦係数
+        restitution: 0.8, // 反発係数
+      };
+      return this.$customCannon.createContactMaterial(
+        this.phyTable.material,
+        this.phyBall.material, options,
+      );
     },
     // helpers
     cameraHelper() {
@@ -131,6 +169,14 @@ export default {
   },
 
   mounted() {
+    // ============物理シミュレーションの世界を作成================
+    const { gravity, iterations, tolerance } = this.phyWorldParams;
+    this.phyWorld = this.$customCannon.createWorld(gravity, iterations, tolerance);
+    this.phyWorld.add(this.phyBall.body);
+    this.phyWorld.add(this.phyTable.body);
+    this.phyWorld.addContactMaterial(this.phyContactTableAndBall);
+    console.debug(this.phyWorld);
+    // ============canvasの世界を作成================
     const { canvas } = this.$refs;
     // createRenderer
     this.renderer = this.$customThree.createWebGLRenderer({
@@ -144,12 +190,8 @@ export default {
     this.$customThree.setRotation(this.camera, { ...cameraRotation });
     const { position: pointLightPosition } = this.pointLightParams;
     this.$customThree.setPosition(this.pointLight, { ...pointLightPosition });
-    const { position: tablePosition } = this.tableParams;
-    this.$customThree.setPosition(this.table, { ...tablePosition });
     const { position: netPosition } = this.netParams;
     this.$customThree.setPosition(this.net, { ...netPosition });
-    const { position: ballPosition } = this.ballParams;
-    this.$customThree.setPosition(this.ball, { ...ballPosition });
     // createScene
     this.scene = this.$customThree.createScene(this.cameraHelper, this.pointLightHelper);
     // add scene
@@ -169,6 +211,11 @@ export default {
   methods: {
     animate() {
       requestAnimationFrame(this.animate);
+      this.phyWorld.step(1 / 60);
+      this.ball.position.copy(this.phyBall.body.position);
+      this.ball.quaternion.copy(this.phyBall.body.quaternion);
+      this.table.position.copy(this.phyTable.body.position);
+      this.table.quaternion.copy(this.phyTable.body.quaternion);
       this.renderer.render(this.scene, this.camera);
       // update controll
       // this.orbitControls.update();
