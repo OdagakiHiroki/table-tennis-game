@@ -92,6 +92,22 @@ export default {
           z: 102,
         },
       },
+      racketParams: {
+        bladeParams: {
+          radius: 10,
+          height: 6,
+        },
+        gripParams: {
+          width: 6,
+          height: 10,
+          depth: 4,
+        },
+        position: {
+          x: 30,
+          y: 76,
+          z: 160,
+        },
+      },
     };
   },
 
@@ -181,6 +197,10 @@ export default {
         options,
       );
     },
+    racket() {
+      const { bladeParams, gripParams, position } = this.racketParams;
+      return this.$customThree.createRacket(bladeParams, gripParams, position);
+    },
     // helpers
     cameraHelper() {
       return this.$customThree.createCameraHelper(this.camera);
@@ -222,6 +242,7 @@ export default {
       this.table,
       this.net,
       this.ball,
+      this.racket,
     );
     // create controll
     this.orbitControls = this.$customThree.createOrbitControls(this.camera, canvas);

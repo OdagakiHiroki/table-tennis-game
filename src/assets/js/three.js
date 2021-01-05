@@ -68,6 +68,14 @@ const customThree = {
     const meshStandardMaterial = this.createMeshStandardMaterial(materialParams);
     return this.createMeshObj(boxGeometry, meshStandardMaterial);
   },
+  createCylinder(
+    geometryParams = { radiusTop: 1, radiusBottom: 1, height: 1 }, materialParams = {},
+  ) {
+    const { radiusTop, radiusBottom, height } = geometryParams;
+    const geometry = new THREE.CylinderGeometry(radiusTop, radiusBottom, height);
+    const material = this.createMeshStandardMaterial(materialParams);
+    return this.createMeshObj(geometry, material);
+  },
   createRoom(width = 1, height = 1, depth = 1) {
     const groundMaterialParams = { color: 0x886622 };
     const ceilingMaterialParams = { color: 0x221111 };
@@ -169,6 +177,29 @@ const customThree = {
     };
     const net = this.createCube(width, height, depth, { ...baseMaterialParams, ...materialParams });
     return net;
+  },
+  createRacket(bladeParams, gripParams, position) {
+    const { radius: bladeRadius, height: bladeHeight } = bladeParams;
+    const bladeMesh = this.createCylinder(
+      { radiusTop: bladeRadius, radiusBottom: bladeRadius, heihgt: bladeHeight },
+      { color: 0xFF0000, side: THREE.DoubleSide },
+    );
+    // positionを設定
+    const { width: gripWidth, height: gripHeight, depth: gripDepth } = gripParams;
+    const gripMesh = this.createCube(gripWidth, gripHeight, gripDepth, { color: 0xFFFFFF });
+    // positionを設定
+    const { x, y, z } = position;
+    this.setPosition(bladeMesh, { x, y, z });
+    this.setRotation(bladeMesh, { x: Math.PI / 2 });
+    // TODO: ラケット位置の座標を正確に計算する
+    const gripPositionX = x - (bladeRadius / 2) - (gripHeight / 2);
+    const gripPositionY = y - (gripWidth / 2);
+    this.setPosition(gripMesh, { x: gripPositionX, y: gripPositionY, z });
+    this.setRotation(gripMesh, { z: Math.PI * (11 / 18) });
+    const racketGroup = new THREE.Group();
+    racketGroup.add(bladeMesh, gripMesh);
+    // TODO: ラケットを回転させる
+    return racketGroup;
   },
   // createHelpers
   createCameraHelper(camera) {
