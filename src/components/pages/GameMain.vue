@@ -29,10 +29,8 @@ export default {
         far: 1000,
         position: {
           x: 0,
-          y: 80,
+          y: 140,
           z: 222,
-          // y: 160,
-          // z: 222,
         },
         rotation: {
           x: Math.PI / -60,
@@ -74,6 +72,7 @@ export default {
         height: 15.25,
         depth: 1,
         color: 0x09008A,
+        opacity: 0.6,
         position: {
           x: 0,
           y: 76 + 7.125 + 2.5,
@@ -135,9 +134,9 @@ export default {
     },
     net() {
       const {
-        width, height, depth, color,
+        width, height, depth, color, opacity,
       } = this.netParams;
-      const materialParams = { color };
+      const materialParams = { color, opacity };
       return this.$customThree.createNet(width, height, depth, materialParams);
     },
     phyBall() {

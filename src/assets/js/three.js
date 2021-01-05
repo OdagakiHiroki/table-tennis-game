@@ -164,9 +164,10 @@ const customThree = {
     return table;
   },
   createNet(width, height, depth, materialParams = {}) {
-    // const netMaterialParams = { wireframe: true };
-    // const mergedMaterialParams = { ...materialParams, ...netMaterialParams };
-    const net = this.createCube(width, height, depth, materialParams);
+    const baseMaterialParams = {
+      transparent: true,
+    };
+    const net = this.createCube(width, height, depth, { ...baseMaterialParams, ...materialParams });
     return net;
   },
   // createHelpers
