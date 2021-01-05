@@ -20,6 +20,20 @@ const customCannon = {
     /* eslint-enable */
   },
   // material
+  createCube(name, mass, position = { x: 0, y: 0, z: 0 }, size = { x: 0, y: 0, z: 0 }) {
+    const material = new CANNON.Material(name);
+    const { x: positionX, y: positionY, z: positionZ } = position;
+    const { x: sizeX, y: sizeY, z: sizeZ } = size;
+    const body = new CANNON.Body({
+      material,
+      mass,
+      position: new CANNON.Vec3(positionX, positionY, positionZ),
+      shape: new CANNON.Box(new CANNON.Vec3(sizeX / 2, sizeY / 2, sizeZ / 2)),
+    });
+    body.angularVelocity.set(0, 0, 0);
+    body.angularDamping = 0.1;
+    return { material, body };
+  },
   createBall(name, mass, position = { x: 0, y: 0, z: 0 }, radius) {
     const material = new CANNON.Material(name);
     const { x: positionX, y: positionY, z: positionZ } = position;
@@ -34,17 +48,11 @@ const customCannon = {
     return { material, body };
   },
   createTable(name, mass, position = { x: 0, y: 0, z: 0 }, size = { x: 0, y: 0, z: 0 }) {
-    const material = new CANNON.Material(name);
-    const { x: positionX, y: positionY, z: positionZ } = position;
-    const { x: sizeX, y: sizeY, z: sizeZ } = size;
-    const body = new CANNON.Body({
-      material,
-      mass,
-      position: new CANNON.Vec3(positionX, positionY, positionZ),
-      shape: new CANNON.Box(new CANNON.Vec3(sizeX / 2, sizeY / 2, sizeZ / 2)),
-    });
-    body.angularVelocity.set(0, 0, 0);
-    body.angularDamping = 0.1;
+    const { material, body } = this.createCube(name, mass, position, size);
+    return { material, body };
+  },
+  createNet(name, mass, position = { x: 0, y: 0, z: 0 }, size = { x: 0, y: 0, z: 0 }) {
+    const { material, body } = this.createCube(name, mass, position, size);
     return { material, body };
   },
   // contactMaterial

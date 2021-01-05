@@ -68,10 +68,12 @@ export default {
         },
       },
       netParams: {
+        name: 'net',
         width: 152.5,
         height: 15.25,
         depth: 1,
         color: 0x09008A,
+        mass: 0,
         opacity: 0.6,
         position: {
           x: 0,
@@ -139,15 +141,22 @@ export default {
       const materialParams = { color, opacity };
       return this.$customThree.createNet(width, height, depth, materialParams);
     },
+    phyNet() {
+      const {
+        name, mass, position, width, height, depth,
+      } = this.netParams;
+      const size = { x: width, y: height, z: depth };
+      return this.$customCannon.createNet(name, mass, position, size);
+    },
+    ball() {
+      const { radius, color } = this.ballParams;
+      return this.$customThree.createBall({ radius, color });
+    },
     phyBall() {
       const {
         name, mass, position, radius,
       } = this.ballParams;
       return this.$customCannon.createBall(name, mass, position, radius);
-    },
-    ball() {
-      const { radius, color } = this.ballParams;
-      return this.$customThree.createBall({ radius, color });
     },
     // contactMaterial
     phyContactTableAndBall() {
@@ -157,7 +166,19 @@ export default {
       };
       return this.$customCannon.createContactMaterial(
         this.phyTable.material,
-        this.phyBall.material, options,
+        this.phyBall.material,
+        options,
+      );
+    },
+    phyContactNetAndBall() {
+      const options = {
+        friction: 0.8, // 摩擦係数
+        restitution: 0.1, // 反発係数
+      };
+      return this.$customCannon.createContactMaterial(
+        this.phyNet.material,
+        this.phyBall.material,
+        options,
       );
     },
     // helpers
@@ -175,7 +196,9 @@ export default {
     this.phyWorld = this.$customCannon.createWorld(gravity, iterations, tolerance);
     this.phyWorld.add(this.phyBall.body);
     this.phyWorld.add(this.phyTable.body);
+    this.phyWorld.add(this.phyNet.body);
     this.phyWorld.addContactMaterial(this.phyContactTableAndBall);
+    this.phyWorld.addContactMaterial(this.phyContactNetAndBall);
     // ============canvasの世界を作成================
     const { canvas } = this.$refs;
     // createRenderer
@@ -190,8 +213,6 @@ export default {
     this.$customThree.setRotation(this.camera, { ...cameraRotation });
     const { position: pointLightPosition } = this.pointLightParams;
     this.$customThree.setPosition(this.pointLight, { ...pointLightPosition });
-    const { position: netPosition } = this.netParams;
-    this.$customThree.setPosition(this.net, { ...netPosition });
     // createScene
     this.scene = this.$customThree.createScene(this.cameraHelper, this.pointLightHelper);
     // add scene
@@ -216,6 +237,8 @@ export default {
       this.ball.quaternion.copy(this.phyBall.body.quaternion);
       this.table.position.copy(this.phyTable.body.position);
       this.table.quaternion.copy(this.phyTable.body.quaternion);
+      this.net.position.copy(this.phyNet.body.position);
+      this.net.quaternion.copy(this.phyNet.body.quaternion);
       this.renderer.render(this.scene, this.camera);
       // update controll
       // this.orbitControls.update();
