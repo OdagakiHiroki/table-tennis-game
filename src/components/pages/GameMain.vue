@@ -100,7 +100,7 @@ export default {
         gripParams: {
           width: 6,
           height: 10,
-          depth: 4,
+          depth: 2,
         },
         position: {
           x: 30,
