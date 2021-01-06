@@ -1,4 +1,6 @@
+import * as THREE from 'three';
 import * as CANNON from 'cannon';
+import initCannonDebugRenderer from './cannonDebugRenderer';
 
 const customCannon = {
   // world
@@ -71,6 +73,11 @@ const customCannon = {
       { ...baseOptions, ...options },
     );
     return contactMaterial;
+  },
+  // helper
+  createCannonDebugRendferer(scene, world) {
+    initCannonDebugRenderer(THREE, CANNON);
+    return new THREE.CannonDebugRenderer(scene, world);
   },
 };
 

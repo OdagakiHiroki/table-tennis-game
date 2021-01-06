@@ -10,6 +10,7 @@ export default {
 
   data() {
     return {
+      cannonDebugRenderer: null,
       phyWorld: null,
       scene: null,
       renderer: null,
@@ -247,6 +248,9 @@ export default {
     // create controll
     this.orbitControls = this.$customThree.createOrbitControls(this.camera, canvas);
     // render
+    this.cannonDebugRenderer = this.$customCannon.createCannonDebugRendferer(
+      this.scene, this.phyWorld,
+    );
     this.animate();
   },
 
@@ -263,6 +267,8 @@ export default {
       this.renderer.render(this.scene, this.camera);
       // update controll
       // this.orbitControls.update();
+      // update debugger
+      this.cannonDebugRenderer.update();
     },
   },
 };

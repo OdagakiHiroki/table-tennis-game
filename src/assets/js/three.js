@@ -184,7 +184,6 @@ const customThree = {
       { radiusTop: bladeRadius, radiusBottom: bladeRadius, heihgt: bladeHeight },
       { color: 0xFF0000, side: THREE.DoubleSide },
     );
-    // positionを設定
     const { width: gripWidth, height: gripHeight, depth: gripDepth } = gripParams;
     const gripMesh = this.createCube(
       gripWidth,
@@ -192,7 +191,6 @@ const customThree = {
       gripDepth,
       { color: 0xFFFFFF, side: THREE.DoubleSide },
     );
-    // positionを設定
     const { x, y, z } = position;
     this.setPosition(bladeMesh, { x, y, z });
     this.setRotation(bladeMesh, { x: Math.PI / 2 });
