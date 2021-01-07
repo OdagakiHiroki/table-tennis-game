@@ -223,11 +223,11 @@ export default {
     // ============物理シミュレーションの世界を作成================
     const { gravity, iterations, tolerance } = this.phyWorldParams;
     this.phyWorld = this.$customCannon.createWorld(gravity, iterations, tolerance);
-    this.phyWorld.add(this.phyBall.body);
-    this.phyWorld.add(this.phyTable.body);
-    this.phyWorld.add(this.phyNet.body);
-    this.phyWorld.add(this.phyRacket.blade.body);
-    this.phyWorld.add(this.phyRacket.grip.body);
+    this.phyWorld.addBody(this.phyBall.body);
+    this.phyWorld.addBody(this.phyTable.body);
+    this.phyWorld.addBody(this.phyNet.body);
+    this.phyWorld.addBody(this.phyRacket.blade.body);
+    this.phyWorld.addBody(this.phyRacket.grip.body);
     this.phyWorld.addContactMaterial(this.phyContactTableAndBall);
     this.phyWorld.addContactMaterial(this.phyContactNetAndBall);
     // ============canvasの世界を作成================
