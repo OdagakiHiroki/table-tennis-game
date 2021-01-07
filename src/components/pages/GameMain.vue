@@ -95,10 +95,14 @@ export default {
       },
       racketParams: {
         bladeParams: {
+          name: 'racketBlade',
+          mass: 0,
           radius: 10,
           height: 6,
         },
         gripParams: {
+          name: 'racketGrip',
+          mass: 0,
           width: 6,
           height: 10,
           depth: 2,
@@ -202,6 +206,10 @@ export default {
       const { bladeParams, gripParams, position } = this.racketParams;
       return this.$customThree.createRacket(bladeParams, gripParams, position);
     },
+    phyRacket() {
+      const { bladeParams, gripParams, position } = this.racketParams;
+      return this.$customCannon.createRacket(bladeParams, gripParams, position);
+    },
     // helpers
     cameraHelper() {
       return this.$customThree.createCameraHelper(this.camera);
@@ -218,6 +226,8 @@ export default {
     this.phyWorld.add(this.phyBall.body);
     this.phyWorld.add(this.phyTable.body);
     this.phyWorld.add(this.phyNet.body);
+    this.phyWorld.add(this.phyRacket.blade.body);
+    this.phyWorld.add(this.phyRacket.grip.body);
     this.phyWorld.addContactMaterial(this.phyContactTableAndBall);
     this.phyWorld.addContactMaterial(this.phyContactNetAndBall);
     // ============canvasの世界を作成================
@@ -247,10 +257,11 @@ export default {
     );
     // create controll
     this.orbitControls = this.$customThree.createOrbitControls(this.camera, canvas);
-    // render
+    // set debugger
     this.cannonDebugRenderer = this.$customCannon.createCannonDebugRendferer(
       this.scene, this.phyWorld,
     );
+    // render
     this.animate();
   },
 
@@ -264,11 +275,11 @@ export default {
       this.table.quaternion.copy(this.phyTable.body.quaternion);
       this.net.position.copy(this.phyNet.body.position);
       this.net.quaternion.copy(this.phyNet.body.quaternion);
+      // update debugRender
+      this.cannonDebugRenderer.update();
       this.renderer.render(this.scene, this.camera);
       // update controll
       // this.orbitControls.update();
-      // update debugger
-      this.cannonDebugRenderer.update();
     },
   },
 };

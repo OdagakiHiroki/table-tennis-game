@@ -57,6 +57,44 @@ const customCannon = {
     const { material, body } = this.createCube(name, mass, position, size);
     return { material, body };
   },
+  createRacket(
+    bladeParams, gripParams, position = { x: 0, y: 0, z: 0 },
+  ) {
+    const {
+      name: bladeName, mass: bladeMass, radius: bladeRadius, height: bladeHeight,
+    } = bladeParams;
+    const bladeMaterial = new CANNON.Material(bladeName);
+    const { x: bladePositionX, y: bladePositionY, z: bladePositionZ } = position;
+    const bladeBody = new CANNON.Body({
+      bladeMaterial,
+      mass: bladeMass,
+      position: new CANNON.Vec3(bladePositionX, bladePositionY, bladePositionZ),
+      shape: new CANNON.Cylinder(bladeRadius, bladeRadius, bladeHeight / 2, 8),
+    });
+
+    const {
+      name: gripName, mass: gripMass, width: gripWidth, height: gripHeight, depth: gripDepth,
+    } = gripParams;
+    const gripSize = { x: gripWidth, y: gripHeight, z: gripDepth };
+    const gripPositionX = bladePositionX - (bladeRadius / 2) - (gripHeight / 2);
+    const gripPositionY = bladePositionY - (gripWidth / 2);
+    const gripPositionZ = bladePositionZ;
+    const gripPosition = { x: gripPositionX, y: gripPositionY, z: gripPositionZ };
+    const {
+      material: gripMaterial, body: gripBody,
+    } = this.createCube(gripName, gripMass, gripPosition, gripSize);
+    gripBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), Math.PI * (11 / 18));
+    return {
+      blade: {
+        material: bladeMaterial,
+        body: bladeBody,
+      },
+      grip: {
+        material: gripMaterial,
+        body: gripBody,
+      },
+    };
+  },
   // contactMaterial
   createContactMaterial(material1, material2, options) {
     const baseOptions = {
