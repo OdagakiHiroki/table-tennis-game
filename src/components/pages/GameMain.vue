@@ -89,7 +89,7 @@ export default {
         mass: 100,
         position: {
           x: 30,
-          y: 92,
+          y: 76 + (5 / 2) + 2, // tablePositionHeight - tableHeight / 2 - ballRadius
           z: 102,
         },
       },
@@ -220,6 +220,7 @@ export default {
   },
 
   mounted() {
+    const { canvas } = this.$refs;
     // ============物理シミュレーションの世界を作成================
     const { gravity, iterations, tolerance } = this.phyWorldParams;
     this.phyWorld = this.$customCannon.createWorld(gravity, iterations, tolerance);
@@ -230,8 +231,13 @@ export default {
     this.phyWorld.addBody(this.phyRacket.grip.body);
     this.phyWorld.addContactMaterial(this.phyContactTableAndBall);
     this.phyWorld.addContactMaterial(this.phyContactNetAndBall);
+    // add event
+    const ballTossFunc = () => {
+      this.$customCannon.toss(this.phyBall.body, { x: 0, y: 16, z: 0 });
+      canvas.removeEventListener('click', ballTossFunc);
+    };
+    canvas.addEventListener('click', ballTossFunc);
     // ============canvasの世界を作成================
-    const { canvas } = this.$refs;
     // createRenderer
     this.renderer = this.$customThree.createWebGLRenderer({
       antialias: true,

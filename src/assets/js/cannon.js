@@ -60,6 +60,7 @@ const customCannon = {
   createRacket(
     bladeParams, gripParams, position = { x: 0, y: 0, z: 0 },
   ) {
+    // TODO: bodyにaddShapeすることで複数の形状をまとめることができるらしい
     const {
       name: bladeName, mass: bladeMass, radius: bladeRadius, height: bladeHeight,
     } = bladeParams;
@@ -111,6 +112,12 @@ const customCannon = {
       { ...baseOptions, ...options },
     );
     return contactMaterial;
+  },
+  // method
+  toss(body, velocity = { x: 0, y: 0, z: 0 }) {
+    // const { x: velocityX, y: velocityZ, z: velocityZ, };
+    const { x, y, z } = velocity;
+    body.velocity.set(x, y, z);
   },
   // helper
   createCannonDebugRendferer(scene, world) {
