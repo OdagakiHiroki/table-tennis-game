@@ -114,6 +114,14 @@ const customCannon = {
     return contactMaterial;
   },
   // method
+  setPosition(material, position = { x: null, y: null, z: null }) {
+    const { x, y, z } = position;
+    material.body.position.set(
+      x || material.body.position.x,
+      -y || material.body.position.y,
+      z || material.body.position.z,
+    );
+  },
   toss(body, velocity = { x: 0, y: 0, z: 0 }) {
     // const { x: velocityX, y: velocityZ, z: velocityZ, };
     const { x, y, z } = velocity;

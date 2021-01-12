@@ -5,16 +5,47 @@
 </template>
 
 <script>
+const RALLY_STATUS = {
+  before: 0,
+  during: 1,
+  after: 2,
+};
+
 export default {
   name: 'GameMain',
 
   data() {
     return {
+      // status
+      rallyStatus: RALLY_STATUS.before,
+      // base
+      canvas: null,
       cannonDebugRenderer: null,
       phyWorld: null,
       scene: null,
       renderer: null,
       orbitControls: null,
+      // camera
+      camera: null,
+      // light
+      pointLight: null,
+      // mesh
+      room: null,
+      table: null,
+      phyTable: null,
+      net: null,
+      phyNet: null,
+      ball: null,
+      phyBall: null,
+      racket: null,
+      phyRacket: null,
+      // contactMaterial
+      phyContactTableAndBall: null,
+      phyContactNetAndBall: null,
+      // helpers
+      cameraHelper: null,
+      pointLightHelper: null,
+      // param
       phyWorldParams: {
         gravity: {
           x: 0,
@@ -34,7 +65,7 @@ export default {
           z: 222,
         },
         rotation: {
-          x: Math.PI / -60,
+          x: Math.PI / -6,
           y: 0,
           z: 0,
         },
@@ -112,118 +143,66 @@ export default {
           y: 76,
           z: 160,
         },
+        initPosition: { // three.jsのgroupしたものとcannon.jsのposition差を埋めるために使用
+          x: 30,
+          y: 76,
+          z: 160,
+        },
+        isControllble: false,
       },
     };
   },
 
   computed: {
     canvasWidth() {
-      return this.$refs.canvas.clientWidth;
+      return this.canvas.clientWidth;
     },
     canvasHeight() {
-      return this.$refs.canvas.clientHeight;
+      return this.canvas.clientHeight;
     },
     aspectRatio() {
       return this.canvasWidth / this.canvasHeight;
     },
-    // TODO: カメラを遠近感のないものに変更する
-    camera() {
-      const { fov, near, far } = this.cameraParams;
-      return this.$customThree.createPerspectiveCamera(fov, this.aspectRatio, near, far);
+    racketPosition() {
+      return this.racketParams.position;
     },
-    pointLight() {
-      const {
-        color, intensity, distance, decay,
-      } = this.pointLightParams;
-      return this.$customThree.createPointLight(color, intensity, distance, decay);
+  },
+
+  watch: {
+    rallyStatus(rallyStatus) {
+      if (rallyStatus === RALLY_STATUS.during) {
+        this.addDuringRallyEvent(this.canvas);
+      }
     },
-    room() {
-      const { width, height, depth } = this.roomParams;
-      return this.$customThree.createRoom(width, height, depth);
+    racketPosition(position) {
+      this.$customCannon.setPosition(this.phyRacket.blade, position);
     },
-    table() {
-      const {
-        width, height, depth, color,
-      } = this.tableParams;
-      const materialParams = { color };
-      return this.$customThree.createTable(width, height, depth, materialParams);
-    },
-    phyTable() {
-      const {
-        name, mass, position, width, height, depth,
-      } = this.tableParams;
-      const size = { x: width, y: height, z: depth };
-      return this.$customCannon.createTable(name, mass, position, size);
-    },
-    net() {
-      const {
-        width, height, depth, color, opacity,
-      } = this.netParams;
-      const materialParams = { color, opacity };
-      return this.$customThree.createNet(width, height, depth, materialParams);
-    },
-    phyNet() {
-      const {
-        name, mass, position, width, height, depth,
-      } = this.netParams;
-      const size = { x: width, y: height, z: depth };
-      return this.$customCannon.createNet(name, mass, position, size);
-    },
-    ball() {
-      const { radius, color } = this.ballParams;
-      return this.$customThree.createBall({ radius, color });
-    },
-    phyBall() {
-      const {
-        name, mass, position, radius,
-      } = this.ballParams;
-      return this.$customCannon.createBall(name, mass, position, radius);
-    },
-    // contactMaterial
-    phyContactTableAndBall() {
-      const options = {
-        friction: 0.8, // 摩擦係数
-        restitution: 0.8876, // 反発係数
-      };
-      return this.$customCannon.createContactMaterial(
-        this.phyTable.material,
-        this.phyBall.material,
-        options,
-      );
-    },
-    phyContactNetAndBall() {
-      const options = {
-        friction: 0.8, // 摩擦係数
-        restitution: 0.1, // 反発係数
-      };
-      return this.$customCannon.createContactMaterial(
-        this.phyNet.material,
-        this.phyBall.material,
-        options,
-      );
-    },
-    racket() {
-      const { bladeParams, gripParams, position } = this.racketParams;
-      return this.$customThree.createRacket(bladeParams, gripParams, position);
-    },
-    phyRacket() {
-      const { bladeParams, gripParams, position } = this.racketParams;
-      return this.$customCannon.createRacket(bladeParams, gripParams, position);
-    },
-    // helpers
-    cameraHelper() {
-      return this.$customThree.createCameraHelper(this.camera);
-    },
-    pointLightHelper() {
-      return this.$customThree.createPointLightHelper(this.pointLight, 30);
-    },
+
   },
 
   mounted() {
     const { canvas } = this.$refs;
+    this.canvas = canvas;
     // ============物理シミュレーションの世界を作成================
     const { gravity, iterations, tolerance } = this.phyWorldParams;
     this.phyWorld = this.$customCannon.createWorld(gravity, iterations, tolerance);
+    // create material
+    this.phyTable = this.createPhyTable(this.tableParams);
+    this.phyNet = this.createPhyNet(this.netParams);
+    this.phyBall = this.createPhyBall(this.ballParams);
+    this.phyRacket = this.createPhyRacket(this.racketParams);
+    // create contactMaterial
+    this.phyContactTableAndBall = this.createContactMaterial(
+      this.phyTable,
+      this.phyBall,
+      { friction: 0.8, restitution: 0.8876 },
+    );
+    this.phyContactNetAndBall = this.createContactMaterial(
+      this.phyNet,
+      this.phyBall,
+      { friction: 0.8, restitution: 0.1 },
+    );
+    // add world
     this.phyWorld.addBody(this.phyBall.body);
     this.phyWorld.addBody(this.phyTable.body);
     this.phyWorld.addBody(this.phyNet.body);
@@ -231,19 +210,24 @@ export default {
     this.phyWorld.addBody(this.phyRacket.grip.body);
     this.phyWorld.addContactMaterial(this.phyContactTableAndBall);
     this.phyWorld.addContactMaterial(this.phyContactNetAndBall);
-    // add event
-    const ballTossFunc = () => {
-      this.$customCannon.toss(this.phyBall.body, { x: 0, y: 16, z: 0 });
-      canvas.removeEventListener('click', ballTossFunc);
-    };
-    canvas.addEventListener('click', ballTossFunc);
     // ============canvasの世界を作成================
     // createRenderer
     this.renderer = this.$customThree.createWebGLRenderer({
       antialias: true,
-      canvas,
+      canvas: this.canvas,
       alpha: false,
     });
+    // create mesh
+    this.camera = this.createCamera(this.cameraParams, this.aspectRatio);
+    this.pointLight = this.createPointLight(this.pointLightParams);
+    this.room = this.createRoom(this.roomParams);
+    this.table = this.createTable(this.tableParams);
+    this.net = this.createNet(this.netParams);
+    this.ball = this.createBall(this.ballParams);
+    this.racket = this.createRacket(this.racketParams);
+    // create helper
+    this.cameraHelper = this.createCameraHelper(this.camera);
+    this.pointLightHelper = this.createPointLightHelper(this.pointLight);
     // setPosition, setRotation
     const { position: cameraPosition, rotation: cameraRotation } = this.cameraParams;
     this.$customThree.setPosition(this.camera, { ...cameraPosition });
@@ -262,11 +246,13 @@ export default {
       this.racket,
     );
     // create controll
-    this.orbitControls = this.$customThree.createOrbitControls(this.camera, canvas);
+    // this.orbitControls = this.$customThree.createOrbitControls(this.camera, this.canvas);
     // set debugger
     this.cannonDebugRenderer = this.$customCannon.createCannonDebugRendferer(
       this.scene, this.phyWorld,
     );
+    // add event
+    this.addBeforeRallyEvent(this.canvas);
     // render
     this.animate();
   },
@@ -281,11 +267,144 @@ export default {
       this.table.quaternion.copy(this.phyTable.body.quaternion);
       this.net.position.copy(this.phyNet.body.position);
       this.net.quaternion.copy(this.phyNet.body.quaternion);
+      this.setRacketPosition();
       // update debugRender
       this.cannonDebugRenderer.update();
       this.renderer.render(this.scene, this.camera);
       // update controll
       // this.orbitControls.update();
+    },
+    changeRallyStatus(rallyStatus) {
+      this.rallyStatus = rallyStatus;
+    },
+    changeRacketControllabe(isControllable) {
+      this.racketParams = { ...this.racketParams, isControllable };
+    },
+    // create object funbctions
+    createCamera(cameraParams, aspectRatio) {
+      const { fov, near, far } = cameraParams;
+      return this.$customThree.createPerspectiveCamera(fov, aspectRatio, near, far);
+    },
+    createPointLight(pointLightParams) {
+      const {
+        color, intensity, distance, decay,
+      } = pointLightParams;
+      return this.$customThree.createPointLight(color, intensity, distance, decay);
+    },
+    createRoom(roomParams) {
+      const { width, height, depth } = roomParams;
+      return this.$customThree.createRoom(width, height, depth);
+    },
+    createTable(tableParams) {
+      const {
+        width, height, depth, color,
+      } = tableParams;
+      const materialParams = { color };
+      return this.$customThree.createTable(width, height, depth, materialParams);
+    },
+    createPhyTable(tableParams) {
+      const {
+        name, mass, position, width, height, depth,
+      } = tableParams;
+      const size = { x: width, y: height, z: depth };
+      return this.$customCannon.createTable(name, mass, position, size);
+    },
+    createNet(netParams) {
+      const {
+        width, height, depth, color, opacity,
+      } = netParams;
+      const materialParams = { color, opacity };
+      return this.$customThree.createNet(width, height, depth, materialParams);
+    },
+    createPhyNet(netParams) {
+      const {
+        name, mass, position, width, height, depth,
+      } = netParams;
+      const size = { x: width, y: height, z: depth };
+      return this.$customCannon.createNet(name, mass, position, size);
+    },
+    createBall(ballParams) {
+      const { radius, color } = ballParams;
+      return this.$customThree.createBall({ radius, color });
+    },
+    createPhyBall(ballParams) {
+      const {
+        name, mass, position, radius,
+      } = ballParams;
+      return this.$customCannon.createBall(name, mass, position, radius);
+    },
+    createRacket(racketParams) {
+      const { bladeParams, gripParams, position } = racketParams;
+      return this.$customThree.createRacket(bladeParams, gripParams, position);
+    },
+    createPhyRacket(racketParams) {
+      const { bladeParams, gripParams, position } = racketParams;
+      return this.$customCannon.createRacket(bladeParams, gripParams, position);
+    },
+    // create contactMaterial
+    createContactMaterial(material1, material2, options = {}) {
+      return this.$customCannon.createContactMaterial(
+        material1.material,
+        material2.material,
+        options,
+      );
+    },
+    // create helper
+    createCameraHelper(camera) {
+      return this.$customThree.createCameraHelper(camera);
+    },
+    createPointLightHelper(pointLight) {
+      return this.$customThree.createPointLightHelper(pointLight, 30);
+    },
+    // add event functions
+    addBeforeRallyEvent(targetElment) {
+      targetElment.addEventListener('click', this.ballToss);
+    },
+    addDuringRallyEvent(targetElment) {
+      // targetElment.addEventListener('mousedown', this.grabRacket);
+      // targetElment.addEventListener('mousemove', this.moveRacket);
+      // targetElment.addEventListener('mouseup', this.releaseRacket);
+      targetElment.addEventListener('pointerdown', this.grabRacket);
+      targetElment.addEventListener('pointermove', this.moveRacket);
+      targetElment.addEventListener('pointerup', this.releaseRacket);
+    },
+    calcRacketPosition(clientX, clientY) {
+      return {
+        x: clientX - (this.canvasWidth / 2),
+        y: clientY - (this.canvasHeight / 2),
+      };
+    },
+    setRacketPosition() {
+      const { x, y, z } = this.racketParams.initPosition;
+      const vec3 = this.$customThree.calcPosition(
+        this.phyRacket.blade.body.position,
+        { x: -x, y: -y, z: -z },
+      );
+      this.racket.position.copy(vec3);
+      // NOTE: 回転も必要ならここで計算して設定する
+      this.racket.quaternion.copy(this.phyRacket.blade.body.quaternion);
+    },
+    // evnet functions
+    ballToss(e) {
+      if (this.rallyStatus === RALLY_STATUS.before) {
+        this.$customCannon.toss(this.phyBall.body, { x: 0, y: 16, z: 0 });
+        e.target.removeEventListener('click', this.ballToss);
+        this.rallyStatus = RALLY_STATUS.during;
+      }
+    },
+    grabRacket() {
+      this.changeRacketControllabe(true);
+    },
+    moveRacket(e) {
+      const { isControllable } = this.racketParams;
+      if (isControllable) {
+        const { x, y } = this.calcRacketPosition(e.clientX, e.clientY);
+        const position = { ...this.racketParams.position, x, y };
+        this.racketParams = { ...this.racketParams, position };
+      }
+    },
+    releaseRacket() {
+      this.changeRacketControllabe(false);
     },
   },
 };

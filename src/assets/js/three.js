@@ -234,6 +234,13 @@ const customThree = {
   setRotation(obj, { x = null, y = null, z = null }) {
     obj.rotation.set(x || obj.rotation.x, y || obj.rotation.y, z || obj.rotation.z);
   },
+  calcPosition(vec3, { x = null, y = null, z = null }) {
+    return new THREE.Vector3(
+      vec3.x + x,
+      vec3.y + y,
+      vec3.z + z,
+    );
+  },
 };
 
 export {
