@@ -1,10 +1,23 @@
 <template>
   <div class="game-main">
     <canvas ref="canvas" class="canvas"></canvas>
+    <PositionController
+      class="position-controller"
+      @mouseDownTop="startMoveRacket('Top')"
+      @mouseUpTop="stopMoveRacket('Top')"
+      @mouseDownLeft="startMoveRacket('Left')"
+      @mouseUpLeft="stopMoveRacket('Left')"
+      @mouseDownRight="startMoveRacket('Right')"
+      @mouseUpRight="stopMoveRacket('Right')"
+      @mouseDownBottom="startMoveRacket('Bottom')"
+      @mouseUpBottom="stopMoveRacket('Bottom')"
+    />
   </div>
 </template>
 
 <script>
+import PositionController from '@/components/molecules/PositionController.vue';
+
 const RALLY_STATUS = {
   before: 0,
   during: 1,
@@ -13,6 +26,10 @@ const RALLY_STATUS = {
 
 export default {
   name: 'GameMain',
+
+  components: {
+    PositionController,
+  },
 
   data() {
     return {
@@ -148,7 +165,10 @@ export default {
           y: 76,
           z: 160,
         },
-        isControllble: false,
+        isControllableTop: false,
+        isControllableLeft: false,
+        isControllableRight: false,
+        isControllableBottom: false,
       },
     };
   },
@@ -174,9 +194,9 @@ export default {
         this.addDuringRallyEvent(this.canvas);
       }
     },
-    racketPosition(position) {
-      this.$customCannon.setPosition(this.phyRacket.blade, position);
-    },
+    // racketPosition(position) {
+    //   this.$customCannon.setPosition(this.phyRacket.blade, position);
+    // },
 
   },
 
@@ -277,8 +297,9 @@ export default {
     changeRallyStatus(rallyStatus) {
       this.rallyStatus = rallyStatus;
     },
-    changeRacketControllabe(isControllable) {
-      this.racketParams = { ...this.racketParams, isControllable };
+    changeRacketControllabe(direction, isControllable) {
+      const key = `isControllable${direction}`;
+      this.racketParams = { ...this.racketParams, [key]: isControllable };
     },
     // create object funbctions
     createCamera(cameraParams, aspectRatio) {
@@ -360,13 +381,13 @@ export default {
     addBeforeRallyEvent(targetElment) {
       targetElment.addEventListener('click', this.ballToss);
     },
-    addDuringRallyEvent(targetElment) {
-      // targetElment.addEventListener('mousedown', this.grabRacket);
-      // targetElment.addEventListener('mousemove', this.moveRacket);
-      // targetElment.addEventListener('mouseup', this.releaseRacket);
-      targetElment.addEventListener('pointerdown', this.grabRacket);
-      targetElment.addEventListener('pointermove', this.moveRacket);
-      targetElment.addEventListener('pointerup', this.releaseRacket);
+    addDuringRallyEvent() {
+      // // targetElment.addEventListener('mousedown', this.startMoveRacket);
+      // // targetElment.addEventListener('mousemove', this.moveRacket);
+      // // targetElment.addEventListener('mouseup', this.releaseRacket);
+      // targetElment.addEventListener('pointerdown', this.startMoveRacket);
+      // targetElment.addEventListener('pointermove', this.moveRacket);
+      // targetElment.addEventListener('pointerup', this.releaseRacket);
     },
     calcRacketPosition(clientX, clientY) {
       return {
@@ -375,7 +396,20 @@ export default {
       };
     },
     setRacketPosition() {
+      this.moveRacketTop('Top');
+      this.moveRacketLeft('Left');
+      this.moveRacketRight('Right');
+      this.moveRacketBottom('Bottom');
       const { x, y, z } = this.racketParams.initPosition;
+      this.$customCannon.setPosition(this.phyRacket.blade, this.racketParams.position);
+
+      const { bladeParams, gripParams, position } = this.racketParams;
+      const { width: gripWidth, height: gripHeight } = gripParams;
+      const { radius: bladeRadius } = bladeParams;
+      const gripPositon = this.$customCannon.calcRacketGripPosition(
+        gripWidth, gripHeight, bladeRadius, position,
+      );
+      this.$customCannon.setPosition(this.phyRacket.grip, gripPositon);
       const vec3 = this.$customThree.calcPosition(
         this.phyRacket.blade.body.position,
         { x: -x, y: -y, z: -z },
@@ -392,19 +426,62 @@ export default {
         this.rallyStatus = RALLY_STATUS.during;
       }
     },
-    grabRacket() {
-      this.changeRacketControllabe(true);
+    // racket control
+    startMoveRacket(key) {
+      this.changeRacketControllabe(key, true);
     },
-    moveRacket(e) {
-      const { isControllable } = this.racketParams;
-      if (isControllable) {
-        const { x, y } = this.calcRacketPosition(e.clientX, e.clientY);
-        const position = { ...this.racketParams.position, x, y };
-        this.racketParams = { ...this.racketParams, position };
+    // TODO: 共通化
+    moveRacketTop(direction) {
+      const isControllable = this.racketParams[`isControllable${direction}`];
+      if (!isControllable) {
+        return;
       }
+      const dy = 1;
+      console.debug(this.racketParams.position);
+      this.racketParams.position = {
+        ...this.racketParams.position,
+        y: this.racketParams.position.y + dy,
+      };
+      this.racketParams = { ...this.racketParams, position: this.racketParams.position };
     },
-    releaseRacket() {
-      this.changeRacketControllabe(false);
+    moveRacketLeft(direction) {
+      const isControllable = this.racketParams[`isControllable${direction}`];
+      if (!isControllable) {
+        return;
+      }
+      const dx = 1;
+      this.racketParams.position = {
+        ...this.racketParams.position,
+        x: this.racketParams.position.x - dx,
+      };
+      this.racketParams = { ...this.racketParams, position: this.racketParams.position };
+    },
+    moveRacketRight(direction) {
+      const isControllable = this.racketParams[`isControllable${direction}`];
+      if (!isControllable) {
+        return;
+      }
+      const dx = 1;
+      this.racketParams.position = {
+        ...this.racketParams.position,
+        x: this.racketParams.position.x + dx,
+      };
+      this.racketParams = { ...this.racketParams, position: this.racketParams.position };
+    },
+    moveRacketBottom(direction) {
+      const isControllable = this.racketParams[`isControllable${direction}`];
+      if (!isControllable) {
+        return;
+      }
+      const dy = 1;
+      this.racketParams.position = {
+        ...this.racketParams.position,
+        y: this.racketParams.position.y - dy,
+      };
+      this.racketParams = { ...this.racketParams, position: this.racketParams.position };
+    },
+    stopMoveRacket(direction) {
+      this.changeRacketControllabe(direction, false);
     },
   },
 };
@@ -412,11 +489,17 @@ export default {
 
 <style lang="scss" scoped>
 .game-main{
+  position: relative;
   width: 100vw;
   height: 100vh;
   .canvas{
     width: 100%;
     height: 100%;
+  }
+  .position-controller{
+    position: absolute;
+    bottom: 40px;
+    right: 40px;
   }
 }
 </style>

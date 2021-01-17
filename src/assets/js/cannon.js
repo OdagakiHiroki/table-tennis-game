@@ -77,10 +77,7 @@ const customCannon = {
       name: gripName, mass: gripMass, width: gripWidth, height: gripHeight, depth: gripDepth,
     } = gripParams;
     const gripSize = { x: gripWidth, y: gripHeight, z: gripDepth };
-    const gripPositionX = bladePositionX - (bladeRadius / 2) - (gripHeight / 2);
-    const gripPositionY = bladePositionY - (gripWidth / 2);
-    const gripPositionZ = bladePositionZ;
-    const gripPosition = { x: gripPositionX, y: gripPositionY, z: gripPositionZ };
+    const gripPosition = this.calcRacketGripPosition(gripWidth, gripHeight, bladeRadius, position);
     const {
       material: gripMaterial, body: gripBody,
     } = this.createCube(gripName, gripMass, gripPosition, gripSize);
@@ -114,11 +111,19 @@ const customCannon = {
     return contactMaterial;
   },
   // method
+  calcRacketGripPosition(gripWidth, gripHeight, bladeRadius, position) {
+    const { x, y, z } = position;
+    const gripPositionX = x - (bladeRadius / 2) - (gripHeight / 2);
+    const gripPositionY = y - (gripWidth / 2);
+    const gripPositionZ = z;
+    const gripPosition = { x: gripPositionX, y: gripPositionY, z: gripPositionZ };
+    return gripPosition;
+  },
   setPosition(material, position = { x: null, y: null, z: null }) {
     const { x, y, z } = position;
     material.body.position.set(
       x || material.body.position.x,
-      -y || material.body.position.y,
+      y || material.body.position.y,
       z || material.body.position.z,
     );
   },
