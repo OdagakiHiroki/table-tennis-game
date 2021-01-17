@@ -1,6 +1,12 @@
 <template>
   <div class="game-main">
     <canvas ref="canvas" class="canvas"></canvas>
+    <ControlButton
+      class='action-button'
+      @mouseDown='handleAction'
+    >
+      <span>{{actionButtonText}}</span>
+    </ControlButton>
     <PositionController
       class="position-controller"
       @mouseDownTop="startMoveRacket('Top')"
@@ -16,6 +22,7 @@
 </template>
 
 <script>
+import ControlButton from '@/components/atoms/ControlButton.vue';
 import PositionController from '@/components/molecules/PositionController.vue';
 
 const RALLY_STATUS = {
@@ -28,6 +35,7 @@ export default {
   name: 'GameMain',
 
   components: {
+    ControlButton,
     PositionController,
   },
 
@@ -183,8 +191,8 @@ export default {
     aspectRatio() {
       return this.canvasWidth / this.canvasHeight;
     },
-    racketPosition() {
-      return this.racketParams.position;
+    actionButtonText() {
+      return this.rallyStatus === RALLY_STATUS.before ? 'トス ' : 'スイング';
     },
   },
 
@@ -194,10 +202,6 @@ export default {
         this.addDuringRallyEvent(this.canvas);
       }
     },
-    // racketPosition(position) {
-    //   this.$customCannon.setPosition(this.phyRacket.blade, position);
-    // },
-
   },
 
   mounted() {
@@ -272,7 +276,7 @@ export default {
       this.scene, this.phyWorld,
     );
     // add event
-    this.addBeforeRallyEvent(this.canvas);
+    // this.addBeforeRallyEvent(this.canvas);
     // render
     this.animate();
   },
@@ -378,9 +382,9 @@ export default {
       return this.$customThree.createPointLightHelper(pointLight, 30);
     },
     // add event functions
-    addBeforeRallyEvent(targetElment) {
-      targetElment.addEventListener('click', this.ballToss);
-    },
+    // addBeforeRallyEvent(targetElment) {
+    //   targetElment.addEventListener('click', this.ballToss);
+    // },
     addDuringRallyEvent() {
       // // targetElment.addEventListener('mousedown', this.startMoveRacket);
       // // targetElment.addEventListener('mousemove', this.moveRacket);
@@ -417,14 +421,6 @@ export default {
       this.racket.position.copy(vec3);
       // NOTE: 回転も必要ならここで計算して設定する
       this.racket.quaternion.copy(this.phyRacket.blade.body.quaternion);
-    },
-    // evnet functions
-    ballToss(e) {
-      if (this.rallyStatus === RALLY_STATUS.before) {
-        this.$customCannon.toss(this.phyBall.body, { x: 0, y: 16, z: 0 });
-        e.target.removeEventListener('click', this.ballToss);
-        this.rallyStatus = RALLY_STATUS.during;
-      }
     },
     // racket control
     startMoveRacket(key) {
@@ -483,6 +479,24 @@ export default {
     stopMoveRacket(direction) {
       this.changeRacketControllabe(direction, false);
     },
+    // action control
+    handleAction() {
+      if (this.rallyStatus === RALLY_STATUS.before) {
+        this.ballToss();
+      }
+      if (this.rallyStatus === RALLY_STATUS.during) {
+        this.swingRacket();
+      }
+    },
+    ballToss() {
+      if (this.rallyStatus === RALLY_STATUS.before) {
+        this.$customCannon.toss(this.phyBall.body, { x: 0, y: 16, z: 0 });
+        this.rallyStatus = RALLY_STATUS.during;
+      }
+    },
+    swingRacket() {
+      console.debug('swing!!');
+    },
   },
 };
 </script>
@@ -495,6 +509,13 @@ export default {
   .canvas{
     width: 100%;
     height: 100%;
+  }
+  .action-button{
+    position: absolute;
+    bottom: 40px;
+    left: 40px;
+    width: 200px;
+    border-radius: 16px;
   }
   .position-controller{
     position: absolute;
