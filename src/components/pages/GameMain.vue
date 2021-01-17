@@ -56,16 +56,18 @@ export default {
         tolerance: 0.1,
       },
       cameraParams: {
-        fov: 70,
-        near: 0.1,
-        far: 1000,
+        fov: 60,
+        near: 1,
+        farMagnification: 8,
         position: {
           x: 0,
-          y: 140,
-          z: 222,
+          // y: 160,
+          y: 360,
+          z: 80,
         },
         rotation: {
-          x: Math.PI / -6,
+          // x: -30,
+          x: 0,
           y: 0,
           z: 0,
         },
@@ -77,76 +79,76 @@ export default {
         decay: 1,
         position: {
           x: 0,
-          y: 900,
-          z: 222,
+          y: 900 * 4,
+          z: 222 * 4,
         },
       },
       roomParams: {
-        width: 1000,
-        height: 1000,
-        depth: 1000,
+        width: 1000 * 4,
+        height: 1000 * 4,
+        depth: 1000 * 4,
       },
       tableParams: {
         name: 'table',
-        width: 152.5,
-        height: 5,
-        depth: 274,
+        width: 152.5 * 4,
+        height: 5 * 4,
+        depth: 274 * 4,
         color: 0x09368C,
         mass: 0,
         position: {
           x: 0,
-          y: 76,
+          y: 76 * 4,
           z: 0,
         },
       },
       netParams: {
         name: 'net',
-        width: 152.5,
-        height: 15.25,
-        depth: 1,
+        width: 152.5 * 4,
+        height: 15.25 * 4,
+        depth: 1 * 4,
         color: 0x09008A,
         mass: 0,
         opacity: 0.6,
         position: {
           x: 0,
-          y: 76 + 7.125 + 2.5,
+          y: 76 * 4 + 7.125 * 4 + 2.5 * 4,
           z: 0,
         },
       },
       ballParams: {
         name: 'ball',
-        radius: 2,
+        radius: 2 * 4,
         color: 0xFFFFFF,
         mass: 100,
         position: {
-          x: 30,
-          y: 76 + (5 / 2) + 2, // tablePositionHeight - tableHeight / 2 - ballRadius
-          z: 102,
+          x: 30 * 4,
+          y: 76 * 4 + ((5 * 4) / 2) + 2 * 4, // tablePositionHeight - tableHeight / 2 - ballRadius
+          z: 102 * 4,
         },
       },
       racketParams: {
         bladeParams: {
           name: 'racketBlade',
           mass: 0,
-          radius: 10,
-          height: 6,
+          radius: 10 * 4,
+          height: 6 * 4,
         },
         gripParams: {
           name: 'racketGrip',
           mass: 0,
-          width: 6,
-          height: 10,
-          depth: 2,
+          width: 6 * 4,
+          height: 10 * 4,
+          depth: 2 * 4,
         },
         position: {
-          x: 30,
-          y: 76,
-          z: 160,
+          x: 30 * 4,
+          y: 76 * 4,
+          z: 160 * 4,
         },
         initPosition: { // three.jsのgroupしたものとcannon.jsのposition差を埋めるために使用
-          x: 30,
-          y: 76,
-          z: 160,
+          x: 30 * 4,
+          y: 76 * 4,
+          z: 160 * 4,
         },
         isControllble: false,
       },
@@ -160,9 +162,6 @@ export default {
     canvasHeight() {
       return this.canvas.clientHeight;
     },
-    aspectRatio() {
-      return this.canvasWidth / this.canvasHeight;
-    },
     racketPosition() {
       return this.racketParams.position;
     },
@@ -175,6 +174,7 @@ export default {
       }
     },
     racketPosition(position) {
+      // console.debug('position', { ...position });
       this.$customCannon.setPosition(this.phyRacket.blade, position);
     },
 
@@ -218,7 +218,7 @@ export default {
       alpha: false,
     });
     // create mesh
-    this.camera = this.createCamera(this.cameraParams, this.aspectRatio);
+    this.camera = this.createCamera(this.cameraParams, this.canvasWidth, this.canvasHeight);
     this.pointLight = this.createPointLight(this.pointLightParams);
     this.room = this.createRoom(this.roomParams);
     this.table = this.createTable(this.tableParams);
@@ -228,12 +228,6 @@ export default {
     // create helper
     this.cameraHelper = this.createCameraHelper(this.camera);
     this.pointLightHelper = this.createPointLightHelper(this.pointLight);
-    // setPosition, setRotation
-    const { position: cameraPosition, rotation: cameraRotation } = this.cameraParams;
-    this.$customThree.setPosition(this.camera, { ...cameraPosition });
-    this.$customThree.setRotation(this.camera, { ...cameraRotation });
-    const { position: pointLightPosition } = this.pointLightParams;
-    this.$customThree.setPosition(this.pointLight, { ...pointLightPosition });
     // createScene
     this.scene = this.$customThree.createScene(this.cameraHelper, this.pointLightHelper);
     // add scene
@@ -267,7 +261,7 @@ export default {
       this.table.quaternion.copy(this.phyTable.body.quaternion);
       this.net.position.copy(this.phyNet.body.position);
       this.net.quaternion.copy(this.phyNet.body.quaternion);
-      this.setRacketPosition();
+      // this.setRacketPosition();
       // update debugRender
       this.cannonDebugRenderer.update();
       this.renderer.render(this.scene, this.camera);
@@ -281,15 +275,19 @@ export default {
       this.racketParams = { ...this.racketParams, isControllable };
     },
     // create object funbctions
-    createCamera(cameraParams, aspectRatio) {
-      const { fov, near, far } = cameraParams;
-      return this.$customThree.createPerspectiveCamera(fov, aspectRatio, near, far);
+    createCamera(cameraParams, canvasWidth, canvasHeight) {
+      const {
+        fov, near, farMagnification, position, rotation,
+      } = cameraParams;
+      return this.$customThree.createPerspectiveCamera(
+        fov, canvasWidth, canvasHeight, near, farMagnification, position, rotation,
+      );
     },
     createPointLight(pointLightParams) {
       const {
-        color, intensity, distance, decay,
+        color, intensity, distance, decay, position,
       } = pointLightParams;
-      return this.$customThree.createPointLight(color, intensity, distance, decay);
+      return this.$customThree.createPointLight(color, intensity, distance, decay, position);
     },
     createRoom(roomParams) {
       const { width, height, depth } = roomParams;
@@ -361,33 +359,39 @@ export default {
       targetElment.addEventListener('click', this.ballToss);
     },
     addDuringRallyEvent(targetElment) {
-      // targetElment.addEventListener('mousedown', this.grabRacket);
-      // targetElment.addEventListener('mousemove', this.moveRacket);
-      // targetElment.addEventListener('mouseup', this.releaseRacket);
       targetElment.addEventListener('pointerdown', this.grabRacket);
       targetElment.addEventListener('pointermove', this.moveRacket);
       targetElment.addEventListener('pointerup', this.releaseRacket);
     },
     calcRacketPosition(clientX, clientY) {
+      // 見えているcanvasに対してxy座標を引いた場合のx、y座標を計算する
+      const canvasX = clientX - (this.canvasWidth / 2);
+      const canvasY = -(clientY - (this.canvasHeight / 2));
+      // カメラの回転角を考慮して、cannon.js、three.jsの世界の座標軸で計算する
+      // sin, cosを使用して計算する
+      const dy = canvasY * Math.cos(Math.abs(this.camera.rotation.x));
+      const dz = -canvasY * Math.sin(Math.abs(this.camera.rotation.x));
+      const { y, z } = this.racketParams.initPosition;
       return {
-        x: clientX - (this.canvasWidth / 2),
-        y: clientY - (this.canvasHeight / 2),
+        x: canvasX,
+        y: y + dy,
+        z: z + dz,
       };
     },
-    setRacketPosition() {
-      const { x, y, z } = this.racketParams.initPosition;
-      const vec3 = this.$customThree.calcPosition(
-        this.phyRacket.blade.body.position,
-        { x: -x, y: -y, z: -z },
-      );
-      this.racket.position.copy(vec3);
-      // NOTE: 回転も必要ならここで計算して設定する
-      this.racket.quaternion.copy(this.phyRacket.blade.body.quaternion);
-    },
+    // setRacketPosition() {
+    //   const { x, y, z } = this.racketParams.initPosition;
+    //   const vec3 = this.$customThree.calcPosition(
+    //     this.phyRacket.blade.body.position,
+    //     { x: -x, y: -y, z: -z },
+    //   );
+    //   this.racket.position.copy(vec3);
+    //   // NOTE: 回転も必要ならここで計算して設定する
+    //   this.racket.quaternion.copy(this.phyRacket.blade.body.quaternion);
+    // },
     // evnet functions
     ballToss(e) {
       if (this.rallyStatus === RALLY_STATUS.before) {
-        this.$customCannon.toss(this.phyBall.body, { x: 0, y: 16, z: 0 });
+        this.$customCannon.toss(this.phyBall.body, { x: 0, y: 40, z: 0 });
         e.target.removeEventListener('click', this.ballToss);
         this.rallyStatus = RALLY_STATUS.during;
       }
@@ -398,9 +402,11 @@ export default {
     moveRacket(e) {
       const { isControllable } = this.racketParams;
       if (isControllable) {
-        const { x, y } = this.calcRacketPosition(e.clientX, e.clientY);
-        const position = { ...this.racketParams.position, x, y };
-        this.racketParams = { ...this.racketParams, position };
+        const { x, y, z } = this.calcRacketPosition(e.clientX, e.clientY);
+        console.debug(x, y, z);
+        // sin, cosを使用して計算する
+        // const position = { ...this.racketParams.position, x, y };
+        this.racketParams = { ...this.racketParams, position: { x, y, z } };
       }
     },
     releaseRacket() {

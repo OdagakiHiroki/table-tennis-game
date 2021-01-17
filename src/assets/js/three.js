@@ -10,9 +10,10 @@ THREE.OrbitControls = OrbitControls;
 const customThree = {
   // scene
   createScene(...objects) {
+    console.debug(objects);
     const scene = new THREE.Scene();
     const objectLength = objects.length;
-    if (objects.length > 0) {
+    if (objects && objects.length > 0) {
       for (let objIndex = 0; objIndex < objectLength; objIndex += 1) {
         scene.add(objects[objIndex]);
       }
@@ -26,15 +27,34 @@ const customThree = {
     return new THREE.WebGLRenderer(params);
   },
   // camera
-  createPerspectiveCamera(fov = 50, aspectRatio = 1, near = 0.1, far = 2000) {
-    return new THREE.PerspectiveCamera(fov, aspectRatio, near, far);
+  createPerspectiveCamera(
+    fov = 50, cnavasWidth, canvasHeight, near = 1, farMagnification = 2, position, rotation,
+  ) {
+    const { y: positionY, z: positionZ } = position;
+    const calcPositionZ = this.calcCameraDeltaZ(fov, canvasHeight, positionZ);
+    const { x: angleX } = rotation;
+    const calcPositionY = this.calcCameraDeltaY(calcPositionZ, angleX, positionY);
+    const far = calcPositionZ * farMagnification;
+    const aspectRatio = cnavasWidth / canvasHeight;
+    const camera = new THREE.PerspectiveCamera(fov, aspectRatio, near, far);
+    // set camera position
+    camera.position.y = calcPositionY;
+    camera.position.z = calcPositionZ;
+    // set camera rotation
+    camera.rotation.x = this.calcRadian(angleX);
+    return camera;
   },
   // light
   createDirectionalLight(color = 0xffffff, intensity = 1) {
     return new THREE.DirectionalLight(color, intensity);
   },
-  createPointLight(color = 0xFFFFFF, intensity = 1, distance = 0, decay = 1) {
-    return new THREE.PointLight(color, intensity, distance, decay);
+  createPointLight(color = 0xFFFFFF, intensity = 1, distance = 0, decay = 1, position) {
+    const { x: positionX, y: positionY, z: positionZ } = position;
+    const light = new THREE.PointLight(color, intensity, distance, decay);
+    light.position.x = positionX || light.position.x;
+    light.position.y = positionY || light.position.y;
+    light.position.z = positionZ || light.position.z;
+    return light;
   },
   // geometry
   createPlaneGeometry(width = 1, height = 1, widthSegaments = 1, heightSegments = 1) {
@@ -228,6 +248,22 @@ const customThree = {
     return new THREE.OrbitControls(camera, domElement);
   },
   // methods
+  calcRadian(angle) {
+    return angle * (Math.PI / 180);
+  },
+  calcCameraDeltaZ(fov, height, positionZ) {
+    // 視野角をラジアンに変換
+    const fovRadian = this.calcRadian(fov / 2);
+    // ぴったりcanvasがおさまるカメラのz位置
+    const dz = (height / 2) / Math.tan(fovRadian);
+    return positionZ + dz;
+  },
+  calcCameraDeltaY(positionZ, rotationX, positionY) {
+    // 回転角をラジアンに変換
+    const radianX = this.calcRadian(Math.abs(rotationX));
+    const dy = positionZ * Math.tan(radianX);
+    return positionY + dy;
+  },
   setPosition(obj, { x = null, y = null, z = null }) {
     obj.position.set(x || obj.position.x, y || obj.position.y, z || obj.position.z);
   },

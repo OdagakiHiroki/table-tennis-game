@@ -72,6 +72,8 @@ const customCannon = {
       position: new CANNON.Vec3(bladePositionX, bladePositionY, bladePositionZ),
       shape: new CANNON.Cylinder(bladeRadius, bladeRadius, bladeHeight / 2, 8),
     });
+    // const blade = { material: bladeMaterial, body: bladeBody };
+    // this.setPosition(blade, position);
 
     const {
       name: gripName, mass: gripMass, width: gripWidth, height: gripHeight, depth: gripDepth,
@@ -86,6 +88,7 @@ const customCannon = {
     } = this.createCube(gripName, gripMass, gripPosition, gripSize);
     gripBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), Math.PI * (11 / 18));
     return {
+      // blade,
       blade: {
         material: bladeMaterial,
         body: bladeBody,
@@ -116,9 +119,10 @@ const customCannon = {
   // method
   setPosition(material, position = { x: null, y: null, z: null }) {
     const { x, y, z } = position;
+    console.debug(x, y, z);
     material.body.position.set(
       x || material.body.position.x,
-      -y || material.body.position.y,
+      y || material.body.position.y,
       z || material.body.position.z,
     );
   },
