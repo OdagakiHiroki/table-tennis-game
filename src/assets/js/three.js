@@ -184,23 +184,26 @@ const customThree = {
       { radiusTop: bladeRadius, radiusBottom: bladeRadius, heihgt: bladeHeight },
       { color: 0xFF0000, side: THREE.DoubleSide },
     );
-    const { width: gripWidth, height: gripHeight, depth: gripDepth } = gripParams;
-    const gripMesh = this.createCube(
-      gripWidth,
-      gripHeight,
-      gripDepth,
-      { color: 0xFFFFFF, side: THREE.DoubleSide },
-    );
+    // const { width: gripWidth, height: gripHeight, depth: gripDepth } = gripParams;
+    // const gripMesh = this.createCube(
+    //   gripWidth,
+    //   gripHeight,
+    //   gripDepth,
+    //   { color: 0xFFFFFF, side: THREE.DoubleSide },
+    // );
     const { x, y, z } = position;
     this.setPosition(bladeMesh, { x, y, z });
     this.setRotation(bladeMesh, { x: Math.PI / 2 });
     // TODO: ラケット位置の座標を正確に計算する
-    const gripPositionX = x - (bladeRadius / 2) - (gripHeight / 2);
-    const gripPositionY = y - (gripWidth / 2);
-    this.setPosition(gripMesh, { x: gripPositionX, y: gripPositionY, z });
-    this.setRotation(gripMesh, { z: Math.PI * (11 / 18) });
+    // const gripPositionX = x - (bladeRadius / 2) - (gripHeight / 2);
+    // const gripPositionY = y - (gripWidth / 2);
+    // this.setPosition(gripMesh, { x: gripPositionX, y: gripPositionY, z });
+    // this.setRotation(gripMesh, { z: Math.PI * (11 / 18) });
     const racketGroup = new THREE.Group();
-    racketGroup.add(bladeMesh, gripMesh);
+    racketGroup.add(
+      bladeMesh,
+      // gripMesh,
+    );
     // TODO: ラケットを回転させる
     return racketGroup;
   },

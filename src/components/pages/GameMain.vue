@@ -152,7 +152,7 @@ export default {
       racketParams: {
         bladeParams: {
           name: 'racketBlade',
-          mass: 0,
+          mass: 100,
           radius: 10,
           height: 6,
         },
@@ -231,7 +231,7 @@ export default {
     this.phyWorld.addBody(this.phyTable.body);
     this.phyWorld.addBody(this.phyNet.body);
     this.phyWorld.addBody(this.phyRacket.blade.body);
-    this.phyWorld.addBody(this.phyRacket.grip.body);
+    // this.phyWorld.addBody(this.phyRacket.grip.body);
     this.phyWorld.addContactMaterial(this.phyContactTableAndBall);
     this.phyWorld.addContactMaterial(this.phyContactNetAndBall);
     // ============canvasの世界を作成================
@@ -407,13 +407,13 @@ export default {
       const { x, y, z } = this.racketParams.initPosition;
       this.$customCannon.setPosition(this.phyRacket.blade, this.racketParams.position);
 
-      const { bladeParams, gripParams, position } = this.racketParams;
-      const { width: gripWidth, height: gripHeight } = gripParams;
-      const { radius: bladeRadius } = bladeParams;
-      const gripPositon = this.$customCannon.calcRacketGripPosition(
-        gripWidth, gripHeight, bladeRadius, position,
-      );
-      this.$customCannon.setPosition(this.phyRacket.grip, gripPositon);
+      // const { bladeParams, gripParams, position } = this.racketParams;
+      // const { width: gripWidth, height: gripHeight } = gripParams;
+      // const { radius: bladeRadius } = bladeParams;
+      // const gripPositon = this.$customCannon.calcRacketGripPosition(
+      //   gripWidth, gripHeight, bladeRadius, position,
+      // );
+      // this.$customCannon.setPosition(this.phyRacket.grip, gripPositon);
       const vec3 = this.$customThree.calcPosition(
         this.phyRacket.blade.body.position,
         { x: -x, y: -y, z: -z },
@@ -433,7 +433,6 @@ export default {
         return;
       }
       const dy = 1;
-      console.debug(this.racketParams.position);
       this.racketParams.position = {
         ...this.racketParams.position,
         y: this.racketParams.position.y + dy,
@@ -483,6 +482,7 @@ export default {
     handleAction() {
       if (this.rallyStatus === RALLY_STATUS.before) {
         this.ballToss();
+        return;
       }
       if (this.rallyStatus === RALLY_STATUS.during) {
         this.swingRacket();
@@ -495,7 +495,14 @@ export default {
       }
     },
     swingRacket() {
-      console.debug('swing!!');
+      this.$customCannon.swing(this.phyRacket.blade.body, { x: 0, y: 1, z: 0 });
+      console.debug('swing!!', this.phyRacket);
+      // const dz = 10;
+      // this.racketParams.position = {
+      //   ...this.racketParams.position,
+      //   z: this.racketParams.position.z - dz,
+      // };
+      // this.racketParams = { ...this.racketParams, position: this.racketParams.position };
     },
   },
 };
