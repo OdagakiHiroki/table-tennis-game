@@ -1,5 +1,19 @@
 # table-tennis-game
 ## WIP
+### 目的
+- amplifyを使ってみる
+- Three.jsを使って3D表示をしてみる。
+- Cannon.jsを使って物理シミュレーションのようなことをしてみる。
+
+### 導入したもの
+- Vue.js
+- Three.js
+- Cannon.js
+- amplify
+- storybook
+- jest（まだ使ってない）
+- husky
+- lint-staged
 ### できること
 - 画面をグリグリするとカメラの位置を変えられる
 - scrollでズームイン、アウト
