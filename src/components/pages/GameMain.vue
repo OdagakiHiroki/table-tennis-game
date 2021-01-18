@@ -3,20 +3,20 @@
     <canvas ref="canvas" class="canvas"></canvas>
     <ControlButton
       class='action-button'
-      @mouseDown='handleAction'
+      @press='handleAction'
     >
       <span>{{actionButtonText}}</span>
     </ControlButton>
     <PositionController
       class="position-controller"
-      @mouseDownTop="startMoveRacket('Top')"
-      @mouseUpTop="stopMoveRacket('Top')"
-      @mouseDownLeft="startMoveRacket('Left')"
-      @mouseUpLeft="stopMoveRacket('Left')"
-      @mouseDownRight="startMoveRacket('Right')"
-      @mouseUpRight="stopMoveRacket('Right')"
-      @mouseDownBottom="startMoveRacket('Bottom')"
-      @mouseUpBottom="stopMoveRacket('Bottom')"
+      @pressTop="startMoveRacket('Top')"
+      @upTop="stopMoveRacket('Top')"
+      @pressLeft="startMoveRacket('Left')"
+      @upLeft="stopMoveRacket('Left')"
+      @pressRight="startMoveRacket('Right')"
+      @upRight="stopMoveRacket('Right')"
+      @pressBottom="startMoveRacket('Bottom')"
+      @upBottom="stopMoveRacket('Bottom')"
     />
   </div>
 </template>
