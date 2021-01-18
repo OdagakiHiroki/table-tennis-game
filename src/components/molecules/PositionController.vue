@@ -3,8 +3,8 @@
     <div class="items top">
       <ControlButton
         class='control-button'
-        @mouseDown='mouseDownTop'
-        @mouseUp='mouseUpTop'
+        @press='pressTop'
+        @up='upTop'
       >
         <span>↑</span>
       </ControlButton>
@@ -12,15 +12,15 @@
     <div class="items center">
       <ControlButton
         class='control-button'
-        @mouseDown='mouseDownLeft'
-        @mouseUp='mouseUpLeft'
+        @press='pressLeft'
+        @up='upLeft'
       >
         <span>←</span>
       </ControlButton>
       <ControlButton
         class='control-button'
-        @mouseDown='mouseDownRight'
-        @mouseUp='mouseUpRight'
+        @press='pressRight'
+        @up='upRight'
       >
         <span>→</span>
       </ControlButton>
@@ -28,8 +28,8 @@
     <div class="items bottom">
       <ControlButton
         class='control-button'
-        @mouseDown='mouseDownBottom'
-        @mouseUp='mouseUpBottom'
+        @press='pressBottom'
+        @up='upBottom'
       >
         <span>↓</span>
       </ControlButton>
@@ -48,29 +48,29 @@ export default {
   },
 
   methods: {
-    mouseDownTop() {
-      this.$emit('mouseDownTop');
+    pressTop() {
+      this.$emit('pressTop');
     },
-    mouseUpTop() {
-      this.$emit('mouseUpTop');
+    upTop() {
+      this.$emit('upTop');
     },
-    mouseDownLeft() {
-      this.$emit('mouseDownLeft');
+    pressLeft() {
+      this.$emit('pressLeft');
     },
-    mouseUpLeft() {
-      this.$emit('mouseUpLeft');
+    upLeft() {
+      this.$emit('upLeft');
     },
-    mouseDownRight() {
-      this.$emit('mouseDownRight');
+    pressRight() {
+      this.$emit('pressRight');
     },
-    mouseUpRight() {
-      this.$emit('mouseUpRight');
+    upRight() {
+      this.$emit('upRight');
     },
-    mouseDownBottom() {
-      this.$emit('mouseDownBottom');
+    pressBottom() {
+      this.$emit('pressBottom');
     },
-    mouseUpBottom() {
-      this.$emit('mouseUpBottom');
+    upBottom() {
+      this.$emit('upBottom');
     },
   },
 };

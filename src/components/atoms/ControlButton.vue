@@ -1,8 +1,10 @@
 <template>
   <div
     class='control-button'
-    @mousedown="handleMouseDown"
-    @mouseup="handleMouseUp"
+    @mousedown="handlePress"
+    @mouseup="handleUp"
+    @touchstart.prevent="handlePress"
+    @touchend.prevent="handleUp"
   >
     <slot></slot>
   </div>
@@ -13,11 +15,11 @@ export default {
   name: 'ControlButton',
 
   methods: {
-    handleMouseDown() {
-      this.$emit('mouseDown');
+    handlePress() {
+      this.$emit('press');
     },
-    handleMouseUp() {
-      this.$emit('mouseUp');
+    handleUp() {
+      this.$emit('up');
     },
   },
 };
