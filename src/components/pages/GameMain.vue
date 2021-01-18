@@ -270,7 +270,7 @@ export default {
       this.racket,
     );
     // create controll
-    // this.orbitControls = this.$customThree.createOrbitControls(this.camera, this.canvas);
+    this.orbitControls = this.$customThree.createOrbitControls(this.camera, this.canvas);
     // set debugger
     this.cannonDebugRenderer = this.$customCannon.createCannonDebugRendferer(
       this.scene, this.phyWorld,
