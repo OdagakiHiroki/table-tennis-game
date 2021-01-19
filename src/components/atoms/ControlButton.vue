@@ -30,8 +30,10 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 40px;
-  height: 40px;
+  width: 4vw;
+  height: 4vw;
+  min-width: 40px;
+  min-height: 40px;
   background-color: #ebebeb;
   border: 1px solid #808080;
   border-radius: 100%;

@@ -519,15 +519,17 @@ export default {
   }
   .action-button{
     position: absolute;
-    bottom: 40px;
-    left: 40px;
-    width: 200px;
-    border-radius: 16px;
+    bottom: 4vw;
+    left: 4vw;
+    width: 8vw;
+    height: 8vw;
+    min-width: 76px;
+    min-height: 76px;
   }
   .position-controller{
     position: absolute;
-    bottom: 40px;
-    right: 40px;
+    bottom: 4vw;
+    right: 4vw;
   }
 }
 </style>

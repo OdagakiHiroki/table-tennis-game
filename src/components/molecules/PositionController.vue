@@ -85,10 +85,8 @@ export default {
     margin-top: 10px;
   }
   .control-button{
-    width: 60px;
-    height: 60px;
     & + .control-button{
-      margin-left: 80px;
+      margin-left: clamp(60px, 16vw, 80px);
     }
   }
   .top{
